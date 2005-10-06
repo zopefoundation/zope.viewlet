@@ -9,13 +9,13 @@ directive::
   >>> from zope.configuration import xmlconfig
   >>> context = xmlconfig.string('''
   ... <configure i18n_domain="zope">
-  ...   <include package="zope.app.viewlet" file="meta.zcml" />
+  ...   <include package="zope.viewlet" file="meta.zcml" />
   ... </configure>
   ... ''')
 
   >>> context = xmlconfig.string('''
   ... <configure xmlns="http://namespaces.zope.org/browser" i18n_domain="zope"
-  ...            package="zope.app.viewlet.tests">
+  ...            package="zope.viewlet.tests">
   ...   <viewlet
   ...       name="testviewlet"
   ...       for="*"
@@ -48,10 +48,10 @@ If we now look into the adapter registry, we will find the viewlet:
   >>> view = BrowserView(content, request)
 
   >>> import zope.interface
-  >>> from zope.app.viewlet.tests.test_doc import ITestRegion
+  >>> from zope.viewlet.tests.test_doc import ITestRegion
 
   >>> import zope.component
-  >>> from zope.app.viewlet.interfaces import IViewlet
+  >>> from zope.viewlet.interfaces import IViewlet
   >>> viewlet = zope.component.getMultiAdapter(
   ...     (content, request, view), ITestRegion, name='testviewlet')
   >>> viewlet()
@@ -61,7 +61,7 @@ Let's now ensure that we can also specify a viewlet class:
 
   >>> context = xmlconfig.string('''
   ... <configure xmlns="http://namespaces.zope.org/browser" i18n_domain="zope"
-  ...            package="zope.app.viewlet.tests">
+  ...            package="zope.viewlet.tests">
   ...   <viewlet
   ...       name="testviewlet2"
   ...       for="*"
@@ -83,7 +83,7 @@ also work:
 
   >>> context = xmlconfig.string('''
   ... <configure xmlns="http://namespaces.zope.org/browser" i18n_domain="zope"
-  ...            package="zope.app.viewlet.tests">
+  ...            package="zope.viewlet.tests">
   ...   <viewlet
   ...       name="testviewlet3"
   ...       for="*"
@@ -104,7 +104,7 @@ be rendered upon calling the viewlet:
 
   >>> context = xmlconfig.string('''
   ... <configure xmlns="http://namespaces.zope.org/browser" i18n_domain="zope"
-  ...            package="zope.app.viewlet.tests">
+  ...            package="zope.viewlet.tests">
   ...   <viewlet
   ...       name="testviewlet4"
   ...       for="*"
@@ -129,7 +129,7 @@ Neither the class or template have been specified:
 
   >>> context = xmlconfig.string('''
   ... <configure xmlns="http://namespaces.zope.org/browser" i18n_domain="zope"
-  ...            package="zope.app.viewlet.tests">
+  ...            package="zope.viewlet.tests">
   ...   <viewlet
   ...       name="testviewlet"
   ...       region=".test_doc.ITestRegion"
@@ -147,7 +147,7 @@ specified:
 
   >>> context = xmlconfig.string('''
   ... <configure xmlns="http://namespaces.zope.org/browser" i18n_domain="zope"
-  ...            package="zope.app.viewlet.tests">
+  ...            package="zope.viewlet.tests">
   ...   <viewlet
   ...       name="testviewlet"
   ...       region=".test_doc.ITestRegion"
@@ -167,7 +167,7 @@ specified attribute:
 
   >>> context = xmlconfig.string('''
   ... <configure xmlns="http://namespaces.zope.org/browser" i18n_domain="zope"
-  ...            package="zope.app.viewlet.tests">
+  ...            package="zope.viewlet.tests">
   ...   <viewlet
   ...       name="testviewlet"
   ...       region=".test_doc.ITestRegion"

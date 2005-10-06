@@ -29,11 +29,11 @@ interfaces that act as content placeholders. Here is a common setup:
   >>> class ILeftColumn(zope.interface.Interface):
   ...     '''The left column of a Web site.'''
 
-  >>> from zope.app.viewlet import interfaces
-  >>> zope.interface.directlyProvides(ILeftColumn, interfaces.IRegion)
+  >>> from zope.contentprovider.interfaces import IRegion
+  >>> zope.interface.directlyProvides(ILeftColumn, IRegion)
 
   >>> import zope.component
-  >>> zope.component.provideUtility(ILeftColumn, interfaces.IRegion,
+  >>> zope.component.provideUtility(ILeftColumn, IRegion,
   ...                               'webpage.LeftColumn')
 
 It is important that the region interface provides the ``IRegion``
@@ -75,7 +75,7 @@ template, while the view object is still available as ``view``. Next we build
 and register the viewlet using a special helper function:
 
   # Create the viewlet class
-  >>> from zope.app.viewlet import viewlet
+  >>> from zope.viewlet import viewlet
   >>> Viewlet = viewlet.SimpleViewletClass(
   ...     viewletFileName, bases=(ViewletBase,), name='viewlet')
 
@@ -112,7 +112,7 @@ creating the front page of our Web Site:
   ...     <h1>My Web Page</h1>
   ...     <div class="left-column">
   ...       <div class="column-item"
-  ...            tal:repeat="viewlet viewlets:webpage.LeftColumn">
+  ...            tal:repeat="viewlet providers:webpage.LeftColumn">
   ...         <tal:block replace="structure viewlet" />
   ...       </div>
   ...     </div>
@@ -182,8 +182,9 @@ scratch. We also want to ensure that this viewlet always displays second and
 not before the first one. Here is a most simple implementation:
 
   >>> from zope.app.publisher.browser import BrowserView
+  >>> from zope.viewlet.interfaces import IViewlet
   >>> class InfoViewlet(BrowserView):
-  ...     zope.interface.implements(interfaces.IViewlet, ILeftColumn)
+  ...     zope.interface.implements(IViewlet, ILeftColumn)
   ...     weight = 1
   ...
   ...     def __init__(self, context, request, view):
@@ -283,7 +284,7 @@ Since everything else is already set up, we can simply register a new view:
   ...     <div class="left-column">
   ...       <div class="column-item">
   ...         <tal:block
-  ...           replace="structure viewlet:webpage.LeftColumn/viewlet" />
+  ...           replace="structure provider:webpage.LeftColumn/viewlet" />
   ...       </div>
   ...     </div>
   ...   </body>
@@ -346,7 +347,7 @@ like to allow various columns that are controlled by viewlets:
   ...     <h1>Contents</h1>
   ...     <table>
   ...       <tr tal:repeat="item view/objectInfo">
-  ...         <td tal:repeat="column viewlets:webpage.ObjectInfoColumn"
+  ...         <td tal:repeat="column providers:webpage.ObjectInfoColumn"
   ...             tal:content="structure column" />
   ...       </tr>
   ...     </table>
@@ -378,17 +379,16 @@ the page template:
   ...         required=True)
 
   >>> zope.interface.directlyProvides(
-  ...     IObjectInfoColumn, interfaces.IRegion)
+  ...     IObjectInfoColumn, IRegion)
 
   >>> zope.component.provideUtility(
-  ...     IObjectInfoColumn, interfaces.IRegion,
-  ...     'webpage.ObjectInfoColumn')
+  ...     IObjectInfoColumn, IRegion, 'webpage.ObjectInfoColumn')
 
 
 Next we implement two very simple viewlets, one displaying the name
 
   >>> class NameColumnViewlet(BrowserView):
-  ...     zope.interface.implements(interfaces.IViewlet, IObjectInfoColumn)
+  ...     zope.interface.implements(IViewlet, IObjectInfoColumn)
   ...     weight = 0
   ...
   ...     def __init__(self, context, request, view):
@@ -409,7 +409,7 @@ Next we implement two very simple viewlets, one displaying the name
 ... and the other displaying the size of the of objects in the list:
 
   >>> class SizeColumnViewlet(BrowserView):
-  ...     zope.interface.implements(interfaces.IViewlet, IObjectInfoColumn)
+  ...     zope.interface.implements(IViewlet, IObjectInfoColumn)
   ...     weight = 1
   ...
   ...     def __init__(self, context, request, view):
@@ -474,15 +474,15 @@ The Default Viewlet Manager
 Let's first have a close look at the default view manager, whose functionality
 we took for granted until now. Initializing the manager
 
-  >>> from zope.app.viewlet import manager
-  >>> defaultManager = manager.DefaultViewletManager(
+  >>> from zope.contentprovider import manager
+  >>> defaultManager = manager.DefaultContentProviderManager(
   ...     content, request, FrontPage(content, request))
 
 we can now get a list of viewlets:
 
-  >>> defaultManager.getViewlets(ILeftColumn)
+  >>> defaultManager.values(ILeftColumn)
   [<InfoViewlet object at ...>,
-   <zope.app.viewlet.viewlet.SimpleViewletClass from ...viewlet.pt object ...>]
+   <zope.viewlet.viewlet.SimpleViewletClass from ...viewlet.pt object ...>]
 
 The default manager also filters out all viewlets for which the current user
 is not authorized. So, if I create a viewlet that has no security
@@ -502,26 +502,26 @@ declarations, then it is ignored:
   ...     ILeftColumn,
   ...     name='unauthorized')
 
-  >>> len(defaultManager.getViewlets(ILeftColumn))
+  >>> len(defaultManager.values(ILeftColumn))
   2
 
 Also, when you try to look up the unauthorized viewlet by name you will get an
 exception telling you that you have insufficient priviledges to access the
 viewlet:
 
-  >>> defaultManager.getViewlet('unauthorized', ILeftColumn)
+  >>> defaultManager.__getitem__('unauthorized', ILeftColumn)
   Traceback (most recent call last):
   ...
-  Unauthorized: You are not authorized to access the viewlet
+  Unauthorized: You are not authorized to access the provider
                 called `unauthorized`.
 
 When looking for a particular viewlet, you also get an exception, if none is
 found:
 
-  >>> defaultManager.getViewlet('unknown', ILeftColumn)
+  >>> defaultManager.__getitem__('unknown', ILeftColumn)
   Traceback (most recent call last):
   ...
-  ComponentLookupError: 'No viewlet with name `unknown` found.'
+  ComponentLookupError: 'No provider with name `unknown` found.'
 
 
 An Alternative Viewlet Manager
@@ -537,9 +537,9 @@ manager that only returns the viewlets that are specified in an option:
 
 So our custom viewlet manager could look something like this:
 
-  >>> class ContentsViewletManager(manager.DefaultViewletManager):
+  >>> class ContentProviderManager(manager.DefaultContentProviderManager):
   ...
-  ...     def getViewlets(self, region):
+  ...     def values(self, region):
   ...         viewlets = zope.component.getAdapters(
   ...             (self.context, self.request, self.view), region)
   ...         viewlets = [(name, viewlet) for name, viewlet in viewlets
@@ -550,10 +550,11 @@ So our custom viewlet manager could look something like this:
 
 We just have to register it as an adapter:
 
+  >>> from zope.contentprovider.interfaces import IContentProviderManager
   >>> zope.component.provideAdapter(
-  ...     ContentsViewletManager,
+  ...     ContentProviderManager,
   ...     (zope.interface.Interface, IDefaultBrowserLayer, IBrowserView),
-  ...     interfaces.IViewletManager)
+  ...     IContentProviderManager)
 
   >>> view = zope.component.getMultiAdapter(
   ...     (content, request), name='contents.html')

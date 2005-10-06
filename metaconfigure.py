@@ -30,7 +30,7 @@ from zope.app.component import metaconfigure
 from zope.app.publisher.browser import viewmeta
 from zope.app.publisher.interfaces.browser import IBrowserView
 
-from zope.contentprovider import interfaces
+from zope.contentprovider.interfaces import IRegion
 from zope.viewlet import viewlet
 from zope.viewlet import interfaces
 
@@ -117,7 +117,7 @@ def viewletDirective(_context, name, permission, region,
 
     viewmeta._handle_for(_context, for_)
     metaconfigure.interface(_context, view)
-    metaconfigure.interface(_context, region, interfaces.IRegion)
+    metaconfigure.interface(_context, region, IRegion)
 
     checker.defineChecker(new_class, checker.Checker(required))
 

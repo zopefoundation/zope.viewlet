@@ -24,7 +24,8 @@ from zope.testing import doctest
 from zope.testing.doctestunit import DocTestSuite, DocFileSuite
 from zope.app.testing import setup
 
-from zope.app.viewlet import interfaces
+from zope.contentprovider.interfaces import IRegion
+from zope.viewlet import interfaces
 
 
 class TestViewlet(object):
@@ -40,8 +41,8 @@ class TestViewlet2(object):
 
 
 class ITestRegion(zope.interface.Interface):
-    '''A region for testing purposes.'''
-zope.interface.directlyProvides(ITestRegion, interfaces.IRegion)
+    """A region for testing purposes."""
+zope.interface.directlyProvides(ITestRegion, IRegion)
 
 
 class TestParticipation(object):
@@ -53,9 +54,9 @@ def setUp(test):
     setup.placefulSetUp()
 
     from zope.app.pagetemplate import metaconfigure
-    from zope.app.viewlet import tales
-    metaconfigure.registerType('viewlets', tales.TALESViewletsExpression)
-    metaconfigure.registerType('viewlet', tales.TALESViewletExpression)
+    from zope.contentprovider import tales
+    metaconfigure.registerType('providers', tales.TALESProvidersExpression)
+    metaconfigure.registerType('provider', tales.TALESProviderExpression)
 
     zope.security.management.getInteraction().add(TestParticipation())
 
@@ -66,7 +67,6 @@ def tearDown(test):
 
 def test_suite():
     return unittest.TestSuite((
-        DocTestSuite('zope.app.viewlet.tales'),
         DocFileSuite('../README.txt',
                      setUp=setUp, tearDown=tearDown,
                      optionflags=doctest.NORMALIZE_WHITESPACE|doctest.ELLIPSIS,
