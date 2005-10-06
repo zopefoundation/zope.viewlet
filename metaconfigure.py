@@ -30,7 +30,9 @@ from zope.app.component import metaconfigure
 from zope.app.publisher.browser import viewmeta
 from zope.app.publisher.interfaces.browser import IBrowserView
 
-from zope.app.viewlet import viewlet, interfaces
+from zope.contentprovider import interfaces
+from zope.viewlet import viewlet
+from zope.viewlet import interfaces
 
 
 def viewletDirective(_context, name, permission, region,
