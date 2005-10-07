@@ -450,17 +450,17 @@ Now let's have a look at the resulting view:
   </html>
 
 
-Viewlet Managers
-----------------
+Content Provider Managers
+-------------------------
 
 Until now we have always asserted that the viewlets returned by the TALES
 namespaces ``viewlets`` and ``viewlet`` always find the viewlets in the
 component architecture and then return them ordered by weight. This, however,
 is just the default policy. We could also register an alternative policy that
 has different rules on looking up, filtering and sorting the viewlets. The
-objects that implement those policies are known as viewlet managers.
+objects that implement those policies are known as content provider managers.
 
-Viewlet managers are usually implemented as adapters from the context, request
+These are usually implemented as adapters from the context, request
 and view to the ``IViewletManager`` interface. They must implement two
 methods. The first one is ``getViewlets(region)``, which returns a list of
 viewlets for the specified region. The region argument is the region
@@ -468,76 +468,22 @@ interface. The second method is ``getViewlet(name, region)``, which allows you
 to look up a specific viewlet by name and region.
 
 
-The Default Viewlet Manager
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Let's first have a close look at the default view manager, whose functionality
-we took for granted until now. Initializing the manager
-
-  >>> from zope.contentprovider import manager
-  >>> from zope.contentprovider.interfaces import IContentProviderManager
-  >>> defaultManager = manager.DefaultContentProviderManager(
-  ...     content, request, FrontPage(content, request), ILeftColumn)
-
-we can now get a list of viewlets:
-
-  >>> defaultManager.values()
-  [<InfoViewlet object at ...>,
-   <zope.viewlet.viewlet.SimpleViewletClass from ...viewlet.pt object ...>]
-
-The default manager also filters out all viewlets for which the current user
-is not authorized. So, if I create a viewlet that has no security
-declarations, then it is ignored:
-
-  >>> class UnauthorizedViewlet(Viewlet):
-  ...     pass
-
-  # Register the access to a permission that does not exist.
-  >>> unauthorizedChecker = NamesChecker(('__call__', 'weight', 'title',),
-  ...                                    permission_id='Unauthorized')
-  >>> defineChecker(UnauthorizedViewlet, unauthorizedChecker)
-
-  >>> zope.component.provideAdapter(
-  ...     UnauthorizedViewlet,
-  ...     (zope.interface.Interface, IDefaultBrowserLayer, IBrowserView),
-  ...     ILeftColumn,
-  ...     name='unauthorized')
-
-  >>> len(defaultManager.values())
-  2
-
-Also, when you try to look up the unauthorized viewlet by name you will get an
-exception telling you that you have insufficient priviledges to access the
-viewlet:
-
-  >>> defaultManager.__getitem__('unauthorized')
-  Traceback (most recent call last):
-  ...
-  Unauthorized: You are not authorized to access the provider
-                called `unauthorized`.
-
-When looking for a particular viewlet, you also get an exception, if none is
-found:
-
-  >>> defaultManager.__getitem__('unknown')
-  Traceback (most recent call last):
-  ...
-  ComponentLookupError: 'No provider with name `unknown` found.'
-
-
-An Alternative Viewlet Manager
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+An Alternative Content Provider Manager
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Let's now imagine that we would like to allow the user to choose the columns
 for the contents view. Here it would not be enough to implement a condition as
 part of the viewlet class, since the TD tag appearance is not controlled by
-the viewlet itself. In those cases it is best to implement a custom viewlet
-manager that only returns the viewlets that are specified in an option:
+the viewlet itself. In those cases it is best to implement a custom content
+provider manager that only returns the viewlets that are specified in an
+option:
 
   >>> showColumns = ['name', 'size']
 
-So our custom viewlet manager could look something like this:
+So our custom content provider manager could look something like this:
 
+  >>> from zope.contentprovider import manager
+  >>> from zope.contentprovider.interfaces import IContentProviderManager
   >>> class ContentsContentProviderManager(manager.DefaultContentProviderManager):
   ...
   ...     def values(self):
