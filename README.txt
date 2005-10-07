@@ -475,12 +475,13 @@ Let's first have a close look at the default view manager, whose functionality
 we took for granted until now. Initializing the manager
 
   >>> from zope.contentprovider import manager
+  >>> from zope.contentprovider.interfaces import IContentProviderManager
   >>> defaultManager = manager.DefaultContentProviderManager(
-  ...     content, request, FrontPage(content, request))
+  ...     content, request, FrontPage(content, request), ILeftColumn)
 
 we can now get a list of viewlets:
 
-  >>> defaultManager.values(ILeftColumn)
+  >>> defaultManager.values()
   [<InfoViewlet object at ...>,
    <zope.viewlet.viewlet.SimpleViewletClass from ...viewlet.pt object ...>]
 
@@ -502,14 +503,14 @@ declarations, then it is ignored:
   ...     ILeftColumn,
   ...     name='unauthorized')
 
-  >>> len(defaultManager.values(ILeftColumn))
+  >>> len(defaultManager.values())
   2
 
 Also, when you try to look up the unauthorized viewlet by name you will get an
 exception telling you that you have insufficient priviledges to access the
 viewlet:
 
-  >>> defaultManager.__getitem__('unauthorized', ILeftColumn)
+  >>> defaultManager.__getitem__('unauthorized')
   Traceback (most recent call last):
   ...
   Unauthorized: You are not authorized to access the provider
@@ -518,7 +519,7 @@ viewlet:
 When looking for a particular viewlet, you also get an exception, if none is
 found:
 
-  >>> defaultManager.__getitem__('unknown', ILeftColumn)
+  >>> defaultManager.__getitem__('unknown')
   Traceback (most recent call last):
   ...
   ComponentLookupError: 'No provider with name `unknown` found.'
@@ -537,11 +538,11 @@ manager that only returns the viewlets that are specified in an option:
 
 So our custom viewlet manager could look something like this:
 
-  >>> class ContentProviderManager(manager.DefaultContentProviderManager):
+  >>> class ContentsContentProviderManager(manager.DefaultContentProviderManager):
   ...
-  ...     def values(self, region):
+  ...     def values(self):
   ...         viewlets = zope.component.getAdapters(
-  ...             (self.context, self.request, self.view), region)
+  ...             (self.context, self.request, self.view), self.region)
   ...         viewlets = [(name, viewlet) for name, viewlet in viewlets
   ...                     if name in showColumns]
   ...         viewlets.sort(lambda x, y: cmp(showColumns.index(x[0]),
@@ -550,10 +551,10 @@ So our custom viewlet manager could look something like this:
 
 We just have to register it as an adapter:
 
-  >>> from zope.contentprovider.interfaces import IContentProviderManager
   >>> zope.component.provideAdapter(
-  ...     ContentProviderManager,
-  ...     (zope.interface.Interface, IDefaultBrowserLayer, IBrowserView),
+  ...     ContentsContentProviderManager,
+  ...     (zope.interface.Interface, IDefaultBrowserLayer, IBrowserView,
+  ...      IObjectInfoColumn),
   ...     IContentProviderManager)
 
   >>> view = zope.component.getMultiAdapter(
