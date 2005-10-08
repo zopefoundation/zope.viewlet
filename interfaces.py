@@ -17,61 +17,43 @@ $Id$
 """
 __docformat__ = 'restructuredtext'
 
-import zope.component
 import zope.interface
 import zope.schema
-from zope.tales import interfaces
-
 from zope.app.i18n import ZopeMessageIDFactory as _
-from zope.app.publisher.interfaces.browser import IBrowserView
 
 from zope.contentprovider.interfaces import IContentProvider
 
 
-
-class IViewlet(IBrowserView, IContentProvider):
-    """A piece of content of a page.
-
-    Viewlets are objects that can fill the region specified in a page, most
-    often page templates. They are selected by the context, request and
-    view. All viewlets of a particular region must also provide the region
-    interface.
+class IViewlet(IContentProvider):
+    """A content provider that is managed by another content provider, known
+    as viewlet manager.
     """
 
-    view = zope.interface.Attribute(
-        'The view the viewlet is used in.')
+
+class IViewletManager(IContentProvider, IReadMapping):
+    """An object that provides access to the content providers.
+
+    The viewlet manager's resposibilities are:
+
+      (1) Aggregation of all viewlets of a given type.
+
+      (2) Apply a set of filters to determine the availability of the
+          viewlets.
+
+      (3) Sort the viewlets based on some implemented policy.
+    """
+
+    providerType = zope.interface.Attribute(
+        '''The specific type of provider that are displayed by this manager.''')
+
+
+class IWeightSupport(zope.interface.Interface):
+    """Components implementing this interface are sortable by weight."""
 
     weight = zope.schema.Int(
         title=_(u'weight'),
         description=_(u"""
-            Key for sorting viewlets if the viewlet collector is supporting
-            this sort mechanism."""),
+            Key for sorting viewlets if the viewlet manager is supporting this
+            sort mechanism."""),
         required=False,
         default=0)
-
-
-#class IViewletManager(zope.interface.Interface):
-#    """An object that provides access to the viewlets.
-#
-#    The viewlets are of a particular context, request and view configuration
-#    are accessible via a particular manager instance. Viewlets are looked up
-#    by the region they appear in and the name of the viewlet.
-#    """
-#
-#    context = zope.interface.Attribute(
-#        'The context of the view the viewlet appears in.')
-#
-#    view = zope.interface.Attribute(
-#        'The view the viewlet is used in.')
-#
-#    request = zope.interface.Attribute(
-#        'The request of the view the viewlet is used in.')
-#
-#    def values(region):
-#        """Get all available viewlets of the given region.
-#
-#        This method is responsible for sorting the viewlets as well.
-#        """
-#
-#    def __getitem__(self, name, region):
-#        """Get a particular viewlet of a region selected by name."""

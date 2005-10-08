@@ -28,23 +28,6 @@ from zope.contentprovider.interfaces import IRegion
 from zope.viewlet import interfaces
 
 
-class TestViewlet(object):
-
-    def doSomething(self):
-        return u'something'
-
-
-class TestViewlet2(object):
-
-    def __call__(self):
-        return u'called'
-
-
-class ITestRegion(zope.interface.Interface):
-    """A region for testing purposes."""
-zope.interface.directlyProvides(ITestRegion, IRegion)
-
-
 class TestParticipation(object):
     principal = 'foobar'
     interaction = None
@@ -55,7 +38,6 @@ def setUp(test):
 
     from zope.app.pagetemplate import metaconfigure
     from zope.contentprovider import tales
-    metaconfigure.registerType('providers', tales.TALESProvidersExpression)
     metaconfigure.registerType('provider', tales.TALESProviderExpression)
 
     zope.security.management.getInteraction().add(TestParticipation())
@@ -67,11 +49,11 @@ def tearDown(test):
 
 def test_suite():
     return unittest.TestSuite((
-        DocFileSuite('../README.txt',
+        DocFileSuite('README.txt',
                      setUp=setUp, tearDown=tearDown,
                      optionflags=doctest.NORMALIZE_WHITESPACE|doctest.ELLIPSIS,
                      ),
-        DocFileSuite('../directives.txt',
+        DocFileSuite('directives.txt',
                      setUp=setUp, tearDown=tearDown,
                      optionflags=doctest.NORMALIZE_WHITESPACE|doctest.ELLIPSIS,
                      ),

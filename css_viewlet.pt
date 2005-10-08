@@ -1,4 +1,4 @@
 <link type="text/css" rel="stylesheet" href="somestyle.css" media="all"
       tal:attributes="rel viewlet/getRel;
-			                href viewlet/getURL;
+                      href viewlet/getURL;
                       media viewlet/getMedia" />
