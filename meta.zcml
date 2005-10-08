@@ -9,6 +9,12 @@
         handler=".metaconfigure.viewletDirective"
         />
 
+    <meta:directive
+        name="viewletManager"
+        schema=".metadirectives.IViewletManagerDirective"
+        handler=".metaconfigure.viewletManagerDirective"
+        />
+
   </meta:directives>
 
 </configure>

@@ -23,6 +23,44 @@ from zope.schema import Int
 from zope.app.publisher.browser import metadirectives
 
 
+class IViewletManagerDirective(metadirectives.IPagesDirective):
+    """A directive to register a new viewlet manager.
+
+    Viewlet manager registrations are very similar to page registrations, 
+    except that they are additionally qualified by a type where is used for
+    lookup viewlets of this type.
+    """
+
+    viewletType = GlobalInterface(
+        title=u"Viewlet type",
+        description=u"The type interface for viewlets.",
+        required=True)
+
+    weight = Int(
+        title=u"weight",
+        description=u"Integer key for sorting viewlets in the same region.",
+        required=False)
+
+    name = TextLine(
+        title=u"The name of the page (view)",
+        description=u"""
+        The name shows up in URLs/paths. For example 'foo' or
+        'foo.html'. This attribute is required unless you use the
+        subdirective 'page' to create sub views. If you do not have
+        sub pages, it is common to use an extension for the view name
+        such as '.html'. If you do have sub pages and you want to
+        provide a view name, you shouldn't use extensions.""",
+        required=True
+        )
+    template = Path(
+        title=u"The name of a template that implements the page.",
+        description=u"""
+        Refers to a file containing a page template (should end in
+        extension '.pt' or '.html').""",
+        required=False
+        )
+
+
 class IViewletDirective(metadirectives.IPagesDirective,
                         metadirectives.IViewPageSubdirective):
     """A directive to register a new viewlet.

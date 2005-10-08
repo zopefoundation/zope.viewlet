@@ -32,7 +32,85 @@ from zope.app.publisher.interfaces.browser import IBrowserView
 
 from zope.contentprovider.interfaces import IRegion
 from zope.viewlet import viewlet
+from zope.viewlet import manager
 from zope.viewlet import interfaces
+
+
+def viewletManagerDirective(_context, name, permission, viewletType,
+                     for_=Interface, layer=IDefaultBrowserLayer,
+                     class_=None, template=None, weight=0,
+                     allowed_interface=None):
+
+    required = {}
+
+    # Get the permission; mainly to correctly handle CheckerPublic.
+    permission = viewmeta._handle_permission(_context, permission)
+
+    # Either the class or template must be specified.
+    if not (class_ or template):
+        raise ConfigurationError("Must specify a class or template")
+
+    if not class_:
+        class_ = manager.ViewletManager
+
+    # Make sure that the template exists and that all low-level API methods
+    # have the right permission.
+    if template:
+        template = os.path.abspath(str(_context.path(template)))
+        if not os.path.isfile(template):
+            raise ConfigurationError("No such file", template)
+        required['__getitem__'] = permission
+
+    if template:
+        # Create a new class for the viewlet manager template and class.
+        new_class = viewlet.SimpleViewletClass(
+            template, bases=(class_, ), weight=weight)
+    else:
+        if not hasattr(class_, 'browserDefault'):
+            cdict = {
+                'browserDefault':
+                lambda self, request: (getattr(self, attribute), ())
+                }
+        else:
+            cdict = {}
+
+        cdict['_weight'] = weight
+        cdict['__name__'] = name
+        cdict['__page_attribute__'] = attribute
+        new_class = type(class_.__name__,
+                         (class_, viewlet.SimpleAttributeViewlet), cdict)
+
+    if hasattr(class_, '__implements__'):
+        classImplements(new_class, IBrowserPublisher)
+
+    # set type if not None
+    if getattr(class_, 'viewletType'):
+        classImplements(new_class, IBrowserPublisher)
+
+    # Make sure the new class implements the region
+    classImplements(new_class, region)
+
+    for attr_name in (attribute, 'browserDefault', '__call__',
+                      'publishTraverse', 'weight'):
+        required[attr_name] = permission
+
+    viewmeta._handle_allowed_interface(
+        _context, allowed_interface, permission, required)
+
+    viewmeta._handle_for(_context, for_)
+    metaconfigure.interface(_context, view)
+    metaconfigure.interface(_context, region, IRegion)
+
+    checker.defineChecker(new_class, checker.Checker(required))
+
+    # register viewlet
+    _context.action(
+        discriminator = ('viewletManager', for_, layer, view, region, name),
+        callable = metaconfigure.handler,
+        args = ('provideAdapter',
+                (for_, layer, view), region, name, new_class,
+                 _context.info),)
+
 
 
 def viewletDirective(_context, name, permission, region,
