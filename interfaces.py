@@ -22,7 +22,7 @@ import zope.schema
 from zope.app.i18n import ZopeMessageIDFactory as _
 
 from zope.contentprovider.interfaces import IContentProvider
-
+from zope.interface.common.mapping import IReadMapping
 
 class IViewlet(IContentProvider):
     """A content provider that is managed by another content provider, known
