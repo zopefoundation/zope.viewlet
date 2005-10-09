@@ -32,8 +32,6 @@ class ViewletManagerBase(object):
     """
     zope.interface.implements(interfaces.IViewletManager)
 
-    providerType = None
-
     def __init__(self, context, request, view):
         self.context = context
         self.request = request
@@ -42,52 +40,64 @@ class ViewletManagerBase(object):
 
     def __getitem__(self, name):
         """See zope.interface.common.mapping.IReadMapping"""
-        # Find the content provider
-        provider = zope.component.queryMultiAdapter(
-            (self.context, self.request, self.view), self.providerType,
+        # Find the viewlet
+        viewlet = zope.component.queryMultiAdapter(
+            (self.context, self.request, self.view, self), interfaces.IViewlet,
             name=name)
 
-        # If the content provider was not found, then raise a lookup error
-        if provider is None:
+        # If the viewlet was not found, then raise a lookup error
+        if viewlet is None:
             raise zope.component.interfaces.ComponentLookupError(
                 'No provider with name `%s` found.' %name)
 
-        # If the content provider cannot be accessed, then raise an
+        # If the viewlet cannot be accessed, then raise an
         # unauthorized error
-        if not zope.security.canAccess(provider, '__call__'):
+        if not zope.security.canAccess(viewlet, '__call__'):
             raise zope.security.interfaces.Unauthorized(
                 'You are not authorized to access the provider '
                 'called `%s`.' %name)
 
-        # Return the rendered content provider.
-        return provider
+        # Return the rendered viewlet.
+        return viewlet
 
 
     def get(self, name, default=None):
+        """See zope.interface.common.mapping.IReadMapping"""
         try:
             return self[name]
         except (zope.component.interfaces.ComponentLookupError,
                 zope.security.interfaces.Unauthorized):
             return default
 
+    def filter(self, viewlets):
+        """Sort out all content providers
+
+        ``viewlets`` is a list of tuples of the form (name, viewlet).
+        """
+        # Only return viewlets accessible to the principal
+        return [(name, viewlet) for name, viewlet in viewlets
+                if zope.security.canAccess(viewlet, '__call__')]
+
+    def sort(self, viewlets):
+        """Sort the viewlets.
+
+        ``viewlets`` is a list of tuples of the form (name, viewlet).
+        """
+        # By default, use the standard Python way of doing sorting.
+        return sorted(viewlets, lambda x, y: cmp(x[1], y[1]))
 
     def __call__(self, *args, **kw):
         """See zope.contentprovider.interfaces.IContentProvider"""
 
         # Find all content providers for the region
         viewlets = zope.component.getAdapters(
-            (self.context, self.request, self.view), self.providerType)
+            (self.context, self.request, self.view, self), interfaces.IViewlet)
 
-        # Sort out all content providers that cannot be accessed by the
-        # principal
-        viewlets = [viewlet for name, viewlet in viewlets
-                    if zope.security.canAccess(viewlet, '__call__')]
+        viewlets = self.filter(viewlets)
+        viewlets = self.sort(viewlets)
 
-        # Sort the content providers by weight.
-        if self.providerType.extends(interfaces.IWeightSupport):
-            viewlets.sort(lambda x, y: cmp(x.weight, y.weight))
-        else:
-            viewlets.sort()
+        # Just use the viewlets from now on
+        viewlets = [viewlet for name, viewlet in viewlets]
 
         # Now render the view
         if self.template:
@@ -96,11 +106,14 @@ class ViewletManagerBase(object):
             return u'\n'.join([viewlet() for viewlet in viewlets])
 
 
-def ViewletManager(providerType, template=None):
+def ViewletManager(interface, template=None, bases=()):
 
     if template is not None:
         template = ViewPageTemplateFile(template)
 
-    return type('<ViewletManager for %s>' %providerType.getName(),
-                (ViewletManagerBase,),
-                {'providerType': providerType, 'template': template})
+    ViewletManager = type(
+        '<ViewletManager providing %s>' % interface.getName(),
+        bases+(ViewletManagerBase,),
+        {'template': template})
+    zope.interface.classImplements(ViewletManager, interface)
+    return ViewletManager

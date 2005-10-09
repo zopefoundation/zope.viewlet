@@ -14,16 +14,16 @@ The Viewlet Manager
 -------------------
 
 In this implementation of viewlets, those regions are just content providers
-called viewlet managers that manage other content providers known as
-viewlets. Every viewlet manager can handle viewlets of a certain type:
+called viewlet managers that manage a special type of content providers known
+as viewlets. Every viewlet manager handles the viewlets registered for it:
 
-  >>> class ILeftColumnViewlet(interfaces.IViewlet):
-  ...     """This is a viewlet located in the left column."""
+  >>> class ILeftColumn(interfaces.IViewletManager):
+  ...     """Viewlet manager located in the left column."""
 
-You can then create a viewlet manager for this viewlet type:
+You can then create a viewlet manager using this interface now:
 
   >>> from zope.viewlet import manager
-  >>> LeftColumn = manager.ViewletManager(ILeftColumnViewlet)
+  >>> LeftColumn = manager.ViewletManager(ILeftColumn)
 
 Now we have to instantiate it:
 
@@ -55,27 +55,29 @@ But now we register some viewlets for the manager
   >>> from zope.publisher.interfaces.browser import IDefaultBrowserLayer
 
   >>> class WeatherBox(object):
-  ...     zope.interface.implements(ILeftColumnViewlet)
+  ...     zope.interface.implements(interfaces.IViewlet)
   ...
-  ...     def __init__(self, context, request, view):
+  ...     def __init__(self, context, request, view, manager):
   ...         pass
   ...
   ...     def __call__(self):
   ...         return u'<div class="box">It is sunny today!</div>'
 
+  # Create a security checker for viewlets.
   >>> from zope.security.checker import NamesChecker, defineChecker
   >>> viewletChecker = NamesChecker(('__call__', 'weight'))
   >>> defineChecker(WeatherBox, viewletChecker)
 
   >>> zope.component.provideAdapter(
   ...     WeatherBox,
-  ...     (zope.interface.Interface, IDefaultBrowserLayer, IBrowserView),
-  ...     ILeftColumnViewlet, name='weather')
+  ...     (zope.interface.Interface, IDefaultBrowserLayer,
+  ...     IBrowserView, ILeftColumn),
+  ...     interfaces.IViewlet, name='weather')
 
   >>> class SportBox(object):
-  ...     zope.interface.implements(ILeftColumnViewlet)
+  ...     zope.interface.implements(interfaces.IViewlet)
   ...
-  ...     def __init__(self, context, request, view):
+  ...     def __init__(self, context, request, view, manager):
   ...         pass
   ...
   ...     def __call__(self):
@@ -85,8 +87,9 @@ But now we register some viewlets for the manager
 
   >>> zope.component.provideAdapter(
   ...     SportBox,
-  ...     (zope.interface.Interface, IDefaultBrowserLayer, IBrowserView),
-  ...     ILeftColumnViewlet, name='sport')
+  ...     (zope.interface.Interface, IDefaultBrowserLayer,
+  ...      IBrowserView, ILeftColumn),
+  ...     interfaces.IViewlet, name='sport')
 
 and thus the left column is filled:
 
@@ -109,11 +112,14 @@ viewlets are put together:
   ... </div>
   ... ''')
 
-  >>> LeftColumn = manager.ViewletManager(ILeftColumnViewlet, leftColTemplate)
+  >>> LeftColumn = manager.ViewletManager(ILeftColumn, template=leftColTemplate)
   >>> leftColumn = LeftColumn(content, request, view)
 
-As you can see, the viewlet manager provides a global ``viewlets`` variable
-that is an iterable of all the avialable viewlets in the correct order:
+XXX: Fix this silly thing; viewlets should be directly available.
+
+As you can see, the viewlet manager provides a global ``options/viewlets``
+variable that is an iterable of all the avialable viewlets in the correct
+order:
 
   >>> print leftColumn().strip()
   <div class="left-column">
@@ -138,41 +144,38 @@ If the viewlet is not found, then the expected behavior is provided:
   >>> leftColumn.get('stock') is None
   True
 
+Customizing the default Viewlet Manager
+---------------------------------------
 
-Viewlet Weight Support
-----------------------
+One important feature of any viewlet manager is to be able to filter and sort
+the viewlets it is displaying. The default viewlet manager that we have been
+using in the tests above, supports filtering by access availability and
+sorting via the viewlet's ``__cmp__()`` method (default). You can easily
+override this default policy by providing a base viewlet manager class.
 
-One important feature of any viewlet manager is to be able to sort the
-viewlets it is displaying. The default viewlet manager that we have been using
-in the tests above, supports sorting via the viewlet's ``__cmp__()`` method
-(default) or sorting by weight. To make this work, the provider type interface
-must inherit the ``IWeightSupport`` interface:
+In our case we will manage the viewlets using a global list:
 
-  >>> class IWeightedLeftColumnViewlet(interfaces.IViewlet,
-  ...                                  interfaces.IWeightSupport):
-  ...     """This is a viewlet located in the left column."""
+  >>> shown = ['weather', 'sport']
 
-This means we also need to change the provider type interface in the viewlet
-manager:
+The viewlet manager base class now uses this list:
 
-  >>> leftColumn.providerType = IWeightedLeftColumnViewlet
+  >>> class ListViewletManager(object):
+  ...
+  ...     def filter(self, viewlets):
+  ...         viewlets = super(ListViewletManager, self).filter(viewlets)
+  ...         return [(name, viewlet)
+  ...                 for name, viewlet in viewlets
+  ...                 if name in shown]
+  ...
+  ...     def sort(self, viewlets):
+  ...         viewlets = dict(viewlets)
+  ...         return [(name, viewlets[name]) for name in shown]
 
-Now we assign the weight to the viewlets and ensure that the interface is
-implemented and the viewlets are registered for this interface:
+Let's now create a new viewlet manager:
 
-  >>> WeatherBox.weight = 0
-  >>> zope.interface.classImplements(WeatherBox, IWeightedLeftColumnViewlet)
-  >>> zope.component.provideAdapter(
-  ...     WeatherBox,
-  ...     (zope.interface.Interface, IDefaultBrowserLayer, IBrowserView),
-  ...     IWeightedLeftColumnViewlet, name='weather')
-
-  >>> SportBox.weight = 1
-  >>> zope.interface.classImplements(SportBox, IWeightedLeftColumnViewlet)
-  >>> zope.component.provideAdapter(
-  ...     SportBox,
-  ...     (zope.interface.Interface, IDefaultBrowserLayer, IBrowserView),
-  ...     IWeightedLeftColumnViewlet, name='sport')
+  >>> LeftColumn = manager.ViewletManager(
+  ...     ILeftColumn, bases=(ListViewletManager,), template=leftColTemplate)
+  >>> leftColumn = LeftColumn(content, request, view)
 
 So we get the weather box first and the sport box second:
 
@@ -182,10 +185,9 @@ So we get the weather box first and the sport box second:
     <div class="box">Patriots (23) : Steelers (7)</div>
   </div>
 
-Now let's change the weight around ...
+Now let's change the order...
 
-  >>> WeatherBox.weight = 1
-  >>> SportBox.weight = 0
+  >>> shown.reverse()
 
 and the order should switch as well:
 
@@ -195,9 +197,76 @@ and the order should switch as well:
     <div class="box">It is sunny today!</div>
   </div>
 
+Of course, we also can remove a shown viewlet:
+
+  >>> weather = shown.pop()
+  >>> print leftColumn().strip()
+  <div class="left-column">
+    <div class="box">Patriots (23) : Steelers (7)</div>
+  </div>
+
+
+Viewlet Base Classes
+--------------------
+
 
 A Complex Example
 -----------------
+
+So far we have only demonstrated simple (maybe overly trivial) use cases of
+the viewlet system. In the following example, we are going to develop a
+generic contents view for files. The step is to create a file component:
+
+  >>> class IFile(zope.interface.Interface):
+  ...     data = zope.interface.Attribute('Data of file.')
+
+  >>> class File(object):
+  ...     zope.interface.implements(IFile)
+  ...     def __init__(self, data=''):
+  ...         self.data = data
+
+Since we want to also provide the size of a file, here a simple implementation
+of the ``ISized`` interface:
+
+  >>> from zope.app import size
+  >>> class FileSized(object):
+  ...     zope.interface.implements(size.interfaces.ISized)
+  ...     zope.component.adapts(IFile)
+  ...
+  ...     def __init__(self, file):
+  ...         self.file = file
+  ...
+  ...     def sizeForSorting(self):
+  ...         return 'byte', len(self.file.data)
+  ...
+  ...     def sizeForDisplay(self):
+  ...         return '%i bytes' %len(self.file.data)
+
+  >>> zope.component.provideAdapter(FileSized)
+
+We also need a container to which we can add files:
+
+  >>> class Container(dict):
+  ...     pass
+
+Here is some sample data:
+
+  >>> container = Container()
+  >>> container['test.txt'] = File('Hello World!')
+  >>> container['mypage.html'] = File('<html><body>Hello World!</body></html>')
+  >>> container['data.xml'] = File('<message>Hello World!</message>')
+
+The contents view of the container should iterate through the container and
+represent the files in a table 
+
+
+
+
+  >>> sortedBy = 'name', +1
+  >>> shownColumns = ['icon', 'name', 'size']
+
+
+
 
 #
 #Viewlet
