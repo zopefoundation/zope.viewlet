@@ -142,6 +142,59 @@ If the viewlet is not found, then the expected behavior is provided:
 Viewlet Weight Support
 ----------------------
 
+One important feature of any viewlet manager is to be able to sort the
+viewlets it is displaying. The default viewlet manager that we have been using
+in the tests above, supports sorting via the viewlet's ``__cmp__()`` method
+(default) or sorting by weight. To make this work, the provider type interface
+must inherit the ``IWeightSupport`` interface:
+
+  >>> class IWeightedLeftColumnViewlet(interfaces.IViewlet,
+  ...                                  interfaces.IWeightSupport):
+  ...     """This is a viewlet located in the left column."""
+
+This means we also need to change the provider type interface in the viewlet
+manager:
+
+  >>> leftColumn.providerType = IWeightedLeftColumnViewlet
+
+Now we assign the weight to the viewlets and ensure that the interface is
+implemented and the viewlets are registered for this interface:
+
+  >>> WeatherBox.weight = 0
+  >>> zope.interface.classImplements(WeatherBox, IWeightedLeftColumnViewlet)
+  >>> zope.component.provideAdapter(
+  ...     WeatherBox,
+  ...     (zope.interface.Interface, IDefaultBrowserLayer, IBrowserView),
+  ...     IWeightedLeftColumnViewlet, name='weather')
+
+  >>> SportBox.weight = 1
+  >>> zope.interface.classImplements(SportBox, IWeightedLeftColumnViewlet)
+  >>> zope.component.provideAdapter(
+  ...     SportBox,
+  ...     (zope.interface.Interface, IDefaultBrowserLayer, IBrowserView),
+  ...     IWeightedLeftColumnViewlet, name='sport')
+
+So we get the weather box first and the sport box second:
+
+  >>> print leftColumn().strip()
+  <div class="left-column">
+    <div class="box">It is sunny today!</div>
+    <div class="box">Patriots (23) : Steelers (7)</div>
+  </div>
+
+Now let's change the weight around ...
+
+  >>> WeatherBox.weight = 1
+  >>> SportBox.weight = 0
+
+and the order should switch as well:
+
+  >>> print leftColumn().strip()
+  <div class="left-column">
+    <div class="box">Patriots (23) : Steelers (7)</div>
+    <div class="box">It is sunny today!</div>
+  </div>
+
 
 A Complex Example
 -----------------
@@ -203,39 +256,6 @@ A Complex Example
 #a region should be displayed. The view the viewlet is used in can also be
 #accessed via the ``view`` attribute of the viewlet class.
 #
-#
-#Changing the Weight
-#~~~~~~~~~~~~~~~~~~~
-#
-#Let's ensure that the weight really affects the order of the viewlets. If we
-#change the weights around,
-#
-#  >>> InfoViewlet.weight = 0
-#  >>> Viewlet._weight = 1
-#
-#the order of the left column in the page template should change:
-#
-#  >>> print view().strip()
-#  <html>
-#    <body>
-#      <h1>My Web Page</h1>
-#      <div class="left-column">
-#        <div class="column-item">
-#          <h3>Some Information.</h3>
-#        </div>
-#        <div class="column-item">
-#  <BLANKLINE>
-#          <div class="box">
-#            Viewlet Title
-#          </div>
-#  <BLANKLINE>
-#        </div>
-#      </div>
-#      <div class="main">
-#        Content here
-#      </div>
-#    </body>
-#  </html>
 #
 #
 #
