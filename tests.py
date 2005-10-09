@@ -32,6 +32,22 @@ class TestParticipation(object):
     interaction = None
 
 
+class ILeftViewlet(interfaces.IViewlet):
+    """Test viewlet type."""
+
+
+class TestViewlet(object):
+
+    def doSomething(self):
+        return u'something'
+
+
+class TestViewlet2(object):
+
+    def __call__(self):
+        return u'called'
+
+
 def setUp(test):
     setup.placefulSetUp()
 

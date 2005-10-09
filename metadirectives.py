@@ -17,8 +17,8 @@ $Id$
 """
 __docformat__ = 'restructuredtext'
 
-from zope.configuration.fields import GlobalInterface
-from zope.schema import Int
+import zope.configuration.fields
+import zope.schema
 
 from zope.app.publisher.browser import metadirectives
 
@@ -31,17 +31,12 @@ class IViewletManagerDirective(metadirectives.IPagesDirective):
     lookup viewlets of this type.
     """
 
-    viewletType = GlobalInterface(
+    providerType = zope.configuration.fields.GlobalInterface(
         title=u"Viewlet type",
         description=u"The type interface for viewlets.",
         required=True)
 
-    weight = Int(
-        title=u"weight",
-        description=u"Integer key for sorting viewlets in the same region.",
-        required=False)
-
-    name = TextLine(
+    name = zope.schema.TextLine(
         title=u"The name of the page (view)",
         description=u"""
         The name shows up in URLs/paths. For example 'foo' or
@@ -50,19 +45,19 @@ class IViewletManagerDirective(metadirectives.IPagesDirective):
         sub pages, it is common to use an extension for the view name
         such as '.html'. If you do have sub pages and you want to
         provide a view name, you shouldn't use extensions.""",
-        required=True
-        )
-    template = Path(
+        required=True)
+
+    template = zope.configuration.fields.Path(
         title=u"The name of a template that implements the page.",
         description=u"""
         Refers to a file containing a page template (should end in
         extension '.pt' or '.html').""",
-        required=False
-        )
+        required=False)
 
 
 class IViewletDirective(metadirectives.IPagesDirective,
-                        metadirectives.IViewPageSubdirective):
+                        metadirectives.IViewPageSubdirective,
+                        IViewletManagerDirective):
     """A directive to register a new viewlet.
 
     Viewlet registrations are very similar to page registrations, except that
@@ -71,18 +66,13 @@ class IViewletDirective(metadirectives.IPagesDirective,
     control the order of the viewlets.
     """
 
-    region = GlobalInterface(
-        title=u"region",
-        description=u"The region interface this viewlet is for.",
-        required=True)
-
-    view = GlobalInterface(
+    view = zope.configuration.fields.GlobalInterface(
         title=u"view",
         description=u"The interface of the view this viewlet is for. "
                     u"(default IBrowserView)""",
         required=False)
 
-    weight = Int(
+    weight = zope.schema.Int(
         title=u"weight",
         description=u"Integer key for sorting viewlets in the same region.",
         required=False)

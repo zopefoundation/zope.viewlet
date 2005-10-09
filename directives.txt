@@ -6,11 +6,19 @@ The viewlet directive allows you to quickly register a new paglet without much
 hassle, like it was shown in the `README.txt` file. Here is a sample
 directive::
 
+  >>> from zope.viewlet.tests import ILeftViewlet
   >>> from zope.configuration import xmlconfig
   >>> context = xmlconfig.string('''
   ... <configure i18n_domain="zope">
   ...   <include package="zope.viewlet" file="meta.zcml" />
   ... </configure>
+  ... ''')
+
+  >>> import os, tempfile
+  >>> temp_dir = tempfile.mkdtemp()
+  >>> testViewlet = os.path.join(temp_dir, 'testviewlet.pt')
+  >>> open(testViewlet, 'w').write('''
+  ... <div>testviewlet content</div>
   ... ''')
 
   >>> context = xmlconfig.string('''
@@ -19,12 +27,12 @@ directive::
   ...   <viewlet
   ...       name="testviewlet"
   ...       for="*"
-  ...       region=".test_doc.ITestRegion"
-  ...       template="test_viewlet.pt"
+  ...       providerType="zope.viewlet.tests.ILeftViewlet"
+  ...       template="%s"
   ...       permission="zope.Public"
   ...       />
   ... </configure>
-  ... ''', context=context)
+  ... ''' % testViewlet, context=context)
 
 As you can see, the directive looks very similar to the page directive and you
 are right. The viewlet directive does not permit you to specify a `menu` and
@@ -48,14 +56,13 @@ If we now look into the adapter registry, we will find the viewlet:
   >>> view = BrowserView(content, request)
 
   >>> import zope.interface
-  >>> from zope.viewlet.tests.test_doc import ITestRegion
-
-  >>> import zope.component
   >>> from zope.viewlet.interfaces import IViewlet
+  
+  >>> import zope.component
   >>> viewlet = zope.component.getMultiAdapter(
-  ...     (content, request, view), ITestRegion, name='testviewlet')
-  >>> viewlet()
-  u'<div>testviewlet macro content</div>\n'
+  ...     (content, request, view), ILeftViewlet, name='testviewlet')
+  >>> viewlet().strip()
+  u'<div>testviewlet content</div>'
 
 Let's now ensure that we can also specify a viewlet class:
 
@@ -65,119 +72,127 @@ Let's now ensure that we can also specify a viewlet class:
   ...   <viewlet
   ...       name="testviewlet2"
   ...       for="*"
-  ...       region=".test_doc.ITestRegion"
-  ...       template="test_viewlet.pt"
-  ...       class=".test_doc.TestViewlet"
+  ...       providerType="zope.viewlet.tests.ILeftViewlet"
+  ...       template="%s"
+  ...       class=".TestViewlet"
   ...       permission="zope.Public"
   ...       />
   ... </configure>
-  ... ''', context=context)
+  ... ''' % testViewlet, context=context)
 
   >>> viewlet = zope.component.getMultiAdapter(
-  ...     (content, request, view), ITestRegion, name='testviewlet2')
-  >>> viewlet()
-  u'<div>testviewlet macro content</div>\n'
+  ...     (content, request, view), ILeftViewlet, name='testviewlet2')
+  >>> viewlet().strip()
+  u'<div>testviewlet content</div>'
 
-Okay, so the template-driven cases wrok. But just specifying a class should
-also work:
+#Okay, so the template-driven cases wrok. But just specifying a class should
+#also work:
+#
+#  >>> context = xmlconfig.string('''
+#  ... <configure xmlns="http://namespaces.zope.org/browser" i18n_domain="zope"
+#  ...            package="zope.viewlet.tests">
+#  ...   <viewlet
+#  ...       name="testviewlet3"
+#  ...       for="*"
+#  ...       providerType="zope.viewlet.tests.ILeftViewlet"
+#  ...       class=".tests.TestViewlet2"
+#  ...       permission="zope.Public"
+#  ...       />
+#  ... </configure>
+#  ... ''', context=context)
+#
+#  >>> viewlet = zope.component.getMultiAdapter(
+#  ...     (content, request, view), ILeftViewlet, name='testviewlet3')
+#  >>> viewlet()
+#  u'called'
+#
+#It should also be possible to specify an alternative attribute of the class to
+#be rendered upon calling the viewlet:
+#
+#  >>> context = xmlconfig.string('''
+#  ... <configure xmlns="http://namespaces.zope.org/browser" i18n_domain="zope"
+#  ...            package="zope.viewlet.tests">
+#  ...   <viewlet
+#  ...       name="testviewlet4"
+#  ...       for="*"
+#  ...       providerType="zope.viewlet.tests.ILeftViewlet"
+#  ...       class=".tests.TestViewlet"
+#  ...       attribute="doSomething"
+#  ...       permission="zope.Public"
+#  ...       />
+#  ... </configure>
+#  ... ''', context=context)
+#
+#  >>> viewlet = zope.component.getMultiAdapter(
+#  ...     (content, request, view), ILeftViewlet, name='testviewlet4')
+#  >>> viewlet()
+#  u'something'
+#
+#
+#Error Scenarios
+#---------------
+#
+#Neither the class or template have been specified:
+#
+#  >>> context = xmlconfig.string('''
+#  ... <configure xmlns="http://namespaces.zope.org/browser" i18n_domain="zope"
+#  ...            package="zope.viewlet.tests">
+#  ...   <viewlet
+#  ...       name="testviewlet"
+#  ...       providerType="zope.viewlet.tests.ILeftViewlet"
+#  ...       permission="zope.Public"
+#  ...       />
+#  ... </configure>
+#  ... ''', context=context)
+#  Traceback (most recent call last):
+#  ...
+#  ZopeXMLConfigurationError: File "<string>", line 4.2-8.8
+#      ConfigurationError: Must specify a class or template
+#
+#The specified attribute is not ``__call__``, but also a template has been
+#specified:
+#
+#  >>> context = xmlconfig.string('''
+#  ... <configure xmlns="http://namespaces.zope.org/browser" i18n_domain="zope"
+#  ...            package="zope.viewlet.tests">
+#  ...   <viewlet
+#  ...       name="testviewlet"
+#  ...       providerType="zope.viewlet.tests.ILeftViewlet"
+#  ...       template="test_viewlet.pt"
+#  ...       attribute="faux"
+#  ...       permission="zope.Public"
+#  ...       />
+#  ... </configure>
+#  ... ''', context=context)
+#  Traceback (most recent call last):
+#  ...
+#  ZopeXMLConfigurationError: File "<string>", line 4.2-10.8
+#      ConfigurationError: Attribute and template cannot be used together.
+#
+#Now, we are not specifying a template, but a class that does not have the
+#specified attribute:
+#
+#  >>> context = xmlconfig.string('''
+#  ... <configure xmlns="http://namespaces.zope.org/browser" i18n_domain="zope"
+#  ...            package="zope.viewlet.tests">
+#  ...   <viewlet
+#  ...       name="testviewlet"
+#  ...       providerType="zope.viewlet.tests.ILeftViewlet"
+#  ...       class=".TestViewlet"
+#  ...       attribute="faux"
+#  ...       permission="zope.Public"
+#  ...       />
+#  ... </configure>
+#  ... ''', context=context)
+#  Traceback (most recent call last):
+#  ...
+#  ZopeXMLConfigurationError: File "<string>", line 4.2-10.8
+#    ConfigurationError: The provided class doesn't have the specified attribute
 
-  >>> context = xmlconfig.string('''
-  ... <configure xmlns="http://namespaces.zope.org/browser" i18n_domain="zope"
-  ...            package="zope.viewlet.tests">
-  ...   <viewlet
-  ...       name="testviewlet3"
-  ...       for="*"
-  ...       region=".test_doc.ITestRegion"
-  ...       class=".test_doc.TestViewlet2"
-  ...       permission="zope.Public"
-  ...       />
-  ... </configure>
-  ... ''', context=context)
-
-  >>> viewlet = zope.component.getMultiAdapter(
-  ...     (content, request, view), ITestRegion, name='testviewlet3')
-  >>> viewlet()
-  u'called'
-
-It should also be possible to specify an alternative attribute of the class to
-be rendered upon calling the viewlet:
-
-  >>> context = xmlconfig.string('''
-  ... <configure xmlns="http://namespaces.zope.org/browser" i18n_domain="zope"
-  ...            package="zope.viewlet.tests">
-  ...   <viewlet
-  ...       name="testviewlet4"
-  ...       for="*"
-  ...       region=".test_doc.ITestRegion"
-  ...       class=".test_doc.TestViewlet"
-  ...       attribute="doSomething"
-  ...       permission="zope.Public"
-  ...       />
-  ... </configure>
-  ... ''', context=context)
-
-  >>> viewlet = zope.component.getMultiAdapter(
-  ...     (content, request, view), ITestRegion, name='testviewlet4')
-  >>> viewlet()
-  u'something'
 
 
-Error Scenarios
----------------
+Cleanup
+-------
 
-Neither the class or template have been specified:
-
-  >>> context = xmlconfig.string('''
-  ... <configure xmlns="http://namespaces.zope.org/browser" i18n_domain="zope"
-  ...            package="zope.viewlet.tests">
-  ...   <viewlet
-  ...       name="testviewlet"
-  ...       region=".test_doc.ITestRegion"
-  ...       permission="zope.Public"
-  ...       />
-  ... </configure>
-  ... ''', context=context)
-  Traceback (most recent call last):
-  ...
-  ZopeXMLConfigurationError: File "<string>", line 4.2-8.8
-      ConfigurationError: Must specify a class or template
-
-The specified attribute is not ``__call__``, but also a template has been
-specified:
-
-  >>> context = xmlconfig.string('''
-  ... <configure xmlns="http://namespaces.zope.org/browser" i18n_domain="zope"
-  ...            package="zope.viewlet.tests">
-  ...   <viewlet
-  ...       name="testviewlet"
-  ...       region=".test_doc.ITestRegion"
-  ...       template="test_viewlet.pt"
-  ...       attribute="faux"
-  ...       permission="zope.Public"
-  ...       />
-  ... </configure>
-  ... ''', context=context)
-  Traceback (most recent call last):
-  ...
-  ZopeXMLConfigurationError: File "<string>", line 4.2-10.8
-      ConfigurationError: Attribute and template cannot be used together.
-
-Now, we are not specifying a template, but a class that does not have the
-specified attribute:
-
-  >>> context = xmlconfig.string('''
-  ... <configure xmlns="http://namespaces.zope.org/browser" i18n_domain="zope"
-  ...            package="zope.viewlet.tests">
-  ...   <viewlet
-  ...       name="testviewlet"
-  ...       region=".test_doc.ITestRegion"
-  ...       class=".test_doc.TestViewlet"
-  ...       attribute="faux"
-  ...       permission="zope.Public"
-  ...       />
-  ... </configure>
-  ... ''', context=context)
-  Traceback (most recent call last):
-  ...
-  ZopeXMLConfigurationError: File "<string>", line 4.2-10.8
-    ConfigurationError: The provided class doesn't have the specified attribute
+  >>> import shutil
+  >>> shutil.rmtree(temp_dir)
