@@ -30,7 +30,8 @@ class IViewlet(IContentProvider):
     """
 
 
-class IViewletManager(IContentProvider, IReadMapping):
+class IViewletManager(IContentProvider,
+                      zope.interface.common.mapping.IReadMapping):
     """An object that provides access to the content providers.
 
     The viewlet manager's resposibilities are:

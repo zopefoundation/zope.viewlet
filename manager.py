@@ -20,8 +20,9 @@ __docformat__ = 'restructuredtext'
 import zope.component
 import zope.interface
 import zope.security
+from zope.app.pagetemplate.viewpagetemplatefile import ViewPageTemplateFile
 
-from zope.contentprovider import interfaces
+from zope.viewlet import interfaces
 
 
 class ViewletManagerBase(object):
@@ -43,7 +44,8 @@ class ViewletManagerBase(object):
         """See zope.interface.common.mapping.IReadMapping"""
         # Find the content provider
         provider = zope.component.queryMultiAdapter(
-            (self.context, self.request, self.view), self.region, name=name)
+            (self.context, self.request, self.view), self.providerType,
+            name=name)
 
         # If the content provider was not found, then raise a lookup error
         if provider is None:
@@ -69,12 +71,12 @@ class ViewletManagerBase(object):
             return default
 
 
-    def __call__(self, *args, **kw)
+    def __call__(self, *args, **kw):
         """See zope.contentprovider.interfaces.IContentProvider"""
 
         # Find all content providers for the region
         viewlets = zope.component.getAdapters(
-            (self.context, self.request, self.view), self.viewType)
+            (self.context, self.request, self.view), self.providerType)
 
         # Sort out all content providers that cannot be accessed by the
         # principal
@@ -82,7 +84,7 @@ class ViewletManagerBase(object):
                     if zope.security.canAccess(viewlet, '__call__')]
 
         # Sort the content providers by weight.
-        if interfaces.IWeightSupport in self.viewletType.flattened():
+        if self.providerType.extends(interfaces.IWeightSupport):
             viewlets.sort(lambda x, y: cmp(x.weight, y.weight))
         else:
             viewlets.sort()
@@ -91,11 +93,14 @@ class ViewletManagerBase(object):
         if self.template:
             return self.template(viewlets=viewlets)
         else:
-            return u'\n'.join(viewlets)
+            return u'\n'.join([viewlet() for viewlet in viewlets])
 
 
-def ViewletManager(type, template=None):
+def ViewletManager(providerType, template=None):
 
-    return type('<ViewletManager for %s>' %type.getName(),
+    if template is not None:
+        template = ViewPageTemplateFile(template)
+
+    return type('<ViewletManager for %s>' %providerType.getName(),
                 (ViewletManagerBase,),
-                {'providerType': type, 'template': None})
+                {'providerType': providerType, 'template': template})

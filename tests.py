@@ -24,7 +24,6 @@ from zope.testing import doctest
 from zope.testing.doctestunit import DocTestSuite, DocFileSuite
 from zope.app.testing import setup
 
-from zope.contentprovider.interfaces import IRegion
 from zope.viewlet import interfaces
 
 

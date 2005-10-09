@@ -23,7 +23,26 @@ viewlets. Every viewlet manager can handle viewlets of a certain type:
 You can then create a viewlet manager for this viewlet type:
 
   >>> from zope.viewlet import manager
-  >>> leftColumn = manager.ViewletManager(ILeftColumnViewlet)
+  >>> LeftColumn = manager.ViewletManager(ILeftColumnViewlet)
+
+Now we have to instantiate it:
+
+  >>> import zope.interface
+  >>> class Content(object):
+  ...     zope.interface.implements(zope.interface.Interface)
+  >>> content = Content()
+
+  >>> from zope.publisher.browser import TestRequest
+  >>> request = TestRequest()
+
+  >>> from zope.app.publisher.interfaces.browser import IBrowserView
+  >>> class View(object):
+  ...     zope.interface.implements(IBrowserView)
+  ...     def __init__(self, context, request):
+  ...         pass
+  >>> view = View(content, request)
+
+  >>> leftColumn = LeftColumn(content, request, view)
 
 So initially nothing gets rendered:
 
@@ -34,9 +53,9 @@ But now we register some viewlets for the manager
 
   >>> import zope.component
   >>> from zope.publisher.interfaces.browser import IDefaultBrowserLayer
-  >>> from zope.app.publisher.interfaces.browser import IBrowserView
 
-  >>> class WeatherBox(ILeftColumnViewlet):
+  >>> class WeatherBox(object):
+  ...     zope.interface.implements(ILeftColumnViewlet)
   ...
   ...     def __init__(self, context, request, view):
   ...         pass
@@ -44,18 +63,25 @@ But now we register some viewlets for the manager
   ...     def __call__(self):
   ...         return u'<div class="box">It is sunny today!</div>'
 
+  >>> from zope.security.checker import NamesChecker, defineChecker
+  >>> viewletChecker = NamesChecker(('__call__', 'weight'))
+  >>> defineChecker(WeatherBox, viewletChecker)
+
   >>> zope.component.provideAdapter(
   ...     WeatherBox,
   ...     (zope.interface.Interface, IDefaultBrowserLayer, IBrowserView),
   ...     ILeftColumnViewlet, name='weather')
 
-  >>> class SportBox(ILeftColumnViewlet):
+  >>> class SportBox(object):
+  ...     zope.interface.implements(ILeftColumnViewlet)
   ...
   ...     def __init__(self, context, request, view):
   ...         pass
   ...
   ...     def __call__(self):
   ...         return u'<div class="box">Patriots (23) : Steelers (7)</div>'
+
+  >>> defineChecker(SportBox, viewletChecker)
 
   >>> zope.component.provideAdapter(
   ...     SportBox,
@@ -64,7 +90,9 @@ But now we register some viewlets for the manager
 
 and thus the left column is filled:
 
-  >>> leftColumn()
+  >>> print leftColumn()
+  <div class="box">Patriots (23) : Steelers (7)</div>
+  <div class="box">It is sunny today!</div>
 
 But this is of course pretty lame, since there is no way of specifying how the
 viewlets are put together. But we have a solution. The second argument of the
@@ -76,17 +104,22 @@ viewlets are put together:
   >>> leftColTemplate = os.path.join(temp_dir, 'leftCol.pt')
   >>> open(leftColTemplate, 'w').write('''
   ... <div class="left-column">
-  ...   <tal:block repeat="viewlet viewlets"
+  ...   <tal:block repeat="viewlet options/viewlets"
   ...              replace="structure viewlet" />
   ... </div>
   ... ''')
 
-  >>> leftColumn = manager.ViewletManager(ILeftColumnViewlet, leftColTemplate)
+  >>> LeftColumn = manager.ViewletManager(ILeftColumnViewlet, leftColTemplate)
+  >>> leftColumn = LeftColumn(content, request, view)
 
 As you can see, the viewlet manager provides a global ``viewlets`` variable
 that is an iterable of all the avialable viewlets in the correct order:
 
-  >>> leftColumn()
+  >>> print leftColumn().strip()
+  <div class="left-column">
+    <div class="box">Patriots (23) : Steelers (7)</div>
+    <div class="box">It is sunny today!</div>
+  </div>
 
 You can also lookup the viewlets directly for management purposes:
 
@@ -98,6 +131,9 @@ You can also lookup the viewlets directly for management purposes:
 If the viewlet is not found, then the expected behavior is provided:
 
   >>> leftColumn['stock']
+  Traceback (most recent call last):
+  ...
+  ComponentLookupError: 'No provider with name `stock` found.'
 
   >>> leftColumn.get('stock') is None
   True
