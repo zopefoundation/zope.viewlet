@@ -223,6 +223,7 @@ generic contents view for files. The step is to create a file component:
   >>> class File(object):
   ...     zope.interface.implements(IFile)
   ...     def __init__(self, data=''):
+  ...         self.__name__ = ''
   ...         self.data = data
 
 Since we want to also provide the size of a file, here a simple implementation
@@ -247,7 +248,9 @@ of the ``ISized`` interface:
 We also need a container to which we can add files:
 
   >>> class Container(dict):
-  ...     pass
+  ...     def __setitem__(self, name, value):
+  ...         value.__name__ = name
+  ...         super(Container, self).__setitem__(name, value)
 
 Here is some sample data:
 
@@ -257,14 +260,164 @@ Here is some sample data:
   >>> container['data.xml'] = File('<message>Hello World!</message>')
 
 The contents view of the container should iterate through the container and
-represent the files in a table 
+represent the files in a table:
+
+  >>> contentsTemplate = os.path.join(temp_dir, 'contents.pt')
+  >>> open(contentsTemplate, 'w').write('''
+  ... <html>
+  ...   <body>
+  ...     <h1>Cotnents</h1>
+  ...     <div tal:content="structure provider:contents" />
+  ...   </body>
+  ... </html>
+  ... ''')
+
+  >>> from zope.app.pagetemplate.simpleviewclass import SimpleViewClass
+  >>> Contents = SimpleViewClass(contentsTemplate, name='contents.html')
 
 
+Now we have to write our own viewlet manager. In this case we cannot use the
+default implementation, since the viewlets will be looked up for each
+different item:
 
+  >>> shownColumns = []
 
-  >>> sortedBy = 'name', +1
-  >>> shownColumns = ['icon', 'name', 'size']
+  >>> class ContentsViewletManager(object):
+  ...     index = None
+  ...
+  ...     def __init__(self, context, request, view):
+  ...         self.context = context
+  ...         self.request = request
+  ...         self.view = view
+  ...
+  ...     def rows(self):
+  ...         rows = []
+  ...         for name, value in self.context.items():
+  ...             rows.append(
+  ...                 [zope.component.getMultiAdapter(
+  ...                     (value, self.request, self.view, self),
+  ...                     interfaces.IViewlet, name=colname)
+  ...                  for colname in shownColumns])
+  ...         return rows
+  ...
+  ...     def __call__(self, *args, **kw):
+  ...         return self.index(*args, **kw)
 
+Now we need a template to produce the contents table:
+
+  >>> tableTemplate = os.path.join(temp_dir, 'table.pt')
+  >>> open(tableTemplate, 'w').write('''
+  ... <table>
+  ...   <tr tal:repeat="row view/rows">
+  ...     <td tal:repeat="column row">
+  ...       <tal:block replace="structure column" />
+  ...     </td>
+  ...   </tr>
+  ... </table>
+  ... ''')
+
+From the two pieces above, we can generate the final viewlet manager class and
+register it (it's a bit tedious, I know):
+
+  >>> from zope.app.pagetemplate.viewpagetemplatefile import \
+  ...     ViewPageTemplateFile
+  >>> ContentsViewletManager = type(
+  ...     'ContentsViewletManager', (ContentsViewletManager,),
+  ...     {'index': ViewPageTemplateFile(tableTemplate)})
+
+  >>> zope.component.provideAdapter(
+  ...     ContentsViewletManager,
+  ...     (Container, IDefaultBrowserLayer, zope.interface.Interface),
+  ...     interfaces.IViewletManager,name='contents')
+
+Since we have not defined any viewlets yet, the table is totally empty:
+
+  >>> contents = Contents(container, request)
+  >>> print contents().strip()
+  <html>
+    <body>
+      <h1>Cotnents</h1>
+      <div>
+        <table>
+          <tr>
+          </tr>
+          <tr>
+          </tr>
+          <tr>
+          </tr>
+        </table>
+      </div>
+    </body>
+  </html>
+
+Now let's create a first viewlet for the manager...
+
+  >>> class NameViewlet(object):
+  ...
+  ...     def __init__(self, context, request, view, manager):
+  ...         self.context = context
+  ...
+  ...     def __call__(self):
+  ...         return self.context.__name__
+
+and register it:
+
+  >>> zope.component.provideAdapter(
+  ...     NameViewlet,
+  ...     (IFile, IDefaultBrowserLayer,
+  ...      zope.interface.Interface, ContentsViewletManager),
+  ...     interfaces.IViewlet, name='name')
+
+Note how you register the viewlet on ``IFile`` and not on the container. Now
+we should be able to see the name for each file in the container:
+
+  >>> print contents().strip()
+  <html>
+    <body>
+      <h1>Cotnents</h1>
+      <div>
+        <table>
+          <tr>
+          </tr>
+          <tr>
+          </tr>
+          <tr>
+          </tr>
+        </table>
+      </div>
+    </body>
+  </html>
+
+Waaa, nothing there! What happened? Well, we have to tell our user preferences
+that we want to see the name as a column in the table:
+
+  >>> shownColumns = ['name']
+
+  >>> print contents().strip()
+  <html>
+    <body>
+      <h1>Cotnents</h1>
+      <div>
+  <table>
+    <tr>
+      <td>
+        mypage.html
+      </td>
+    </tr>
+    <tr>
+      <td>
+        data.xml
+      </td>
+    </tr>
+    <tr>
+      <td>
+        test.txt
+      </td>
+    </tr>
+  </table>
+  </div>
+    </body>
+  </html>
 
 
 

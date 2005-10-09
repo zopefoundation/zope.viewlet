@@ -28,7 +28,7 @@ from zope.viewlet import interfaces
 class ViewletManagerBase(object):
     """The Viewlet Manager Base
 
-    A generic manager class which can be instantiated 
+    A generic manager class which can be instantiated
     """
     zope.interface.implements(interfaces.IViewletManager)
 
