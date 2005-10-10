@@ -1,11 +1,14 @@
-=========================
-The ``viewlet`` Directive
-=========================
+=================================================
+The ``viewletManager`` and ``viewlet`` Directives
+=================================================
 
 The viewlet directive allows you to quickly register a new paglet without much
 hassle, like it was shown in the `README.txt` file. Here is a sample
 directive::
 
+  >>> from zope.app import zapi
+  >>> import zope.interface
+  
   >>> from zope.viewlet.tests import ILeftViewlet
   >>> from zope.configuration import xmlconfig
   >>> context = xmlconfig.string('''
@@ -16,6 +19,14 @@ directive::
 
   >>> import os, tempfile
   >>> temp_dir = tempfile.mkdtemp()
+
+  >>> testViewletManager = os.path.join(temp_dir, 'testviewletmanager.pt')
+  >>> open(testViewletManager, 'w').write('''
+  ... <div tal:repeat="viewlet options/viewlets"
+  ...   <div tal:replace="viewlet"></div>
+  ... </div>
+  ... ''')
+
   >>> testViewlet = os.path.join(temp_dir, 'testviewlet.pt')
   >>> open(testViewlet, 'w').write('''
   ... <div>testviewlet content</div>
@@ -24,6 +35,13 @@ directive::
   >>> context = xmlconfig.string('''
   ... <configure xmlns="http://namespaces.zope.org/browser" i18n_domain="zope"
   ...            package="zope.viewlet.tests">
+  ...   <viewletManager
+  ...       name="testviewlet"
+  ...       for="*"
+  ...       providerType="zope.viewlet.tests.ILeftViewlet"
+  ...       template="%s"
+  ...       permission="zope.Public"
+  ...       />
   ...   <viewlet
   ...       name="testviewlet"
   ...       for="*"
@@ -32,7 +50,7 @@ directive::
   ...       permission="zope.Public"
   ...       />
   ... </configure>
-  ... ''' % testViewlet, context=context)
+  ... ''' % (testViewletManager, testViewlet), context=context)
 
 As you can see, the directive looks very similar to the page directive and you
 are right. The viewlet directive does not permit you to specify a `menu` and
@@ -46,7 +64,7 @@ default value is zero.
 If we now look into the adapter registry, we will find the viewlet:
 
   >>> class Content(object):
-  ...     pass
+  ...     zope.interface.implements(zope.interface.Interface)
   >>> content = Content()
 
   >>> from zope.publisher.browser import TestRequest
@@ -56,11 +74,12 @@ If we now look into the adapter registry, we will find the viewlet:
   >>> view = BrowserView(content, request)
 
   >>> import zope.interface
-  >>> from zope.viewlet.interfaces import IViewlet
+  >>> from zope.viewlet.interfaces import IViewlet, IViewletManager
   
-  >>> import zope.component
-  >>> viewlet = zope.component.getMultiAdapter(
-  ...     (content, request, view), ILeftViewlet, name='testviewlet')
+  >>> manager = zapi.getMultiAdapter(
+  ...     (content, request, view), IViewletManager, name='testviewlet')
+  >>> viewlet = zapi.getMultiAdapter(
+  ...     (content, request, view, manager), IViewlet, name='testviewlet')
   >>> viewlet().strip()
   u'<div>testviewlet content</div>'
 
@@ -81,7 +100,7 @@ Let's now ensure that we can also specify a viewlet class:
   ... ''' % testViewlet, context=context)
 
   >>> viewlet = zope.component.getMultiAdapter(
-  ...     (content, request, view), ILeftViewlet, name='testviewlet2')
+  ...     (content, request, view, manager), name='testviewlet2')
   >>> viewlet().strip()
   u'<div>testviewlet content</div>'
 

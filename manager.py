@@ -111,9 +111,12 @@ def ViewletManager(interface, template=None, bases=()):
     if template is not None:
         template = ViewPageTemplateFile(template)
 
+    if ViewletManagerBase not in bases:
+        bases = bases + (ViewletManagerBase,)
+
     ViewletManager = type(
         '<ViewletManager providing %s>' % interface.getName(),
-        bases+(ViewletManagerBase,),
+        bases,
         {'template': template})
     zope.interface.classImplements(ViewletManager, interface)
     return ViewletManager

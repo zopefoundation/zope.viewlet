@@ -52,7 +52,7 @@ def viewletManagerDirective(_context, name, permission, providerType,
 
     # If class is not given we use the default viewlet manager.
     if class_ is None:
-        class_ = manager.ViewletManager
+        class_ = manager.ViewletManagerBase
 
     # Make sure that the template exists and that all low-level API methods
     # have the right permission.
@@ -63,8 +63,8 @@ def viewletManagerDirective(_context, name, permission, providerType,
         required['__getitem__'] = permission
 
         # Create a new class based on the template and class.
-        new_class = viewlet.SimpleViewletClass(
-            template, bases=(class_, ))
+        new_class = manager.ViewletManager(
+            providerType, bases=(class_, ))
 
     if hasattr(new_class, '__implements__'):
         classImplements(new_class, IBrowserPublisher)
@@ -74,7 +74,7 @@ def viewletManagerDirective(_context, name, permission, providerType,
         classImplements(new_class, providerType)
 
     for attr_name in ('browserDefault', '__call__',
-                      'publishTraverse', 'weight'):
+                      'publishTraverse'):
         required[attr_name] = permission
 
     viewmeta._handle_allowed_interface(
@@ -188,8 +188,8 @@ def viewletDirective(_context, name, permission, providerType, for_=Interface,
 
     # register viewlet
     _context.action(
-        discriminator = ('viewlet', for_, layer, view, name),
+        discriminator = ('viewlet', for_, layer, view, name, providerType),
         callable = metaconfigure.handler,
         args = ('provideAdapter',
-                (for_, layer, view), providerType, name, new_class,
-                 _context.info),)
+                (for_, layer, view, providerType), interfaces.IViewlet,
+                 name, new_class, _context.info),)
