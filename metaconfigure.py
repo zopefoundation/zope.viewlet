@@ -42,6 +42,7 @@ from zope.viewlet import interfaces
 # TODO: 
 def viewletManagerDirective(_context, name, permission, providerType,
                      for_=Interface, layer=IDefaultBrowserLayer,
+                     view=IBrowserView, 
                      class_=None, template=None, allowed_interface=None):
 
     required = {}
@@ -63,7 +64,7 @@ def viewletManagerDirective(_context, name, permission, providerType,
 
         # Create a new class based on the template and class.
         new_class = viewlet.SimpleViewletClass(
-            template, bases=(class_, ), weight=weight)
+            template, bases=(class_, ))
 
     if hasattr(new_class, '__implements__'):
         classImplements(new_class, IBrowserPublisher)
@@ -72,7 +73,7 @@ def viewletManagerDirective(_context, name, permission, providerType,
     if hasattr(class_, 'providerType'):
         classImplements(new_class, providerType)
 
-    for attr_name in (attribute, 'browserDefault', '__call__',
+    for attr_name in ('browserDefault', '__call__',
                       'publishTraverse', 'weight'):
         required[attr_name] = permission
 
@@ -89,8 +90,8 @@ def viewletManagerDirective(_context, name, permission, providerType,
         discriminator = ('viewletManager', for_, layer, view, name),
         callable = metaconfigure.handler,
         args = ('provideAdapter',
-                (for_, layer, view), IViewletManager, name, new_class,
-                 _context.info),)
+                (for_, layer, view), interfaces.IViewletManager, name,
+                 new_class, _context.info),)
 
 
 
@@ -103,9 +104,9 @@ def viewletDirective(_context, name, permission, providerType, for_=Interface,
 
     required = {}
 
-    if interfaces.IWeightSupport.implementedBy(class_) and weight == None:
-        msg = "Must specify a weight if IWeightSupport is implemented"
-        raise ConfigurationError(msg)
+    #if interfaces.IWeightSupport.implementedBy(class_) and weight == None:
+    #    msg = "Must specify a weight if IWeightSupport is implemented"
+    #    raise ConfigurationError(msg)
 
     # Get the permission; mainly to correctly handle CheckerPublic.
     permission = viewmeta._handle_permission(_context, permission)

@@ -22,6 +22,7 @@ import sys
 import zope.interface
 
 from zope.app.pagetemplate.simpleviewclass import simple
+from zope.app.pagetemplate.viewpagetemplatefile import ViewPageTemplateFile
 from zope.app.publisher.browser import BrowserView
 from zope.app.traversing import api
 
