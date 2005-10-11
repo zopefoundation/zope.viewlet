@@ -2,9 +2,11 @@
 The ``viewletManager`` and ``viewlet`` Directives
 =================================================
 
-The viewlet directive allows you to quickly register a new paglet without much
-hassle, like it was shown in the `README.txt` file. Here is a sample
-directive::
+The viewletManager directive allows you to quickly register a new content
+provider that presents viewlets on a web page. You'll find more information
+about viewlets and viewlet managers in the `README.txt` file.
+
+Here is a sample directive::
 
   >>> from zope.app import zapi
   >>> import zope.interface
@@ -27,11 +29,6 @@ directive::
   ... </div>
   ... ''')
 
-  >>> testViewlet = os.path.join(temp_dir, 'testviewlet.pt')
-  >>> open(testViewlet, 'w').write('''
-  ... <div>testviewlet content</div>
-  ... ''')
-
   >>> context = xmlconfig.string('''
   ... <configure xmlns="http://namespaces.zope.org/browser" i18n_domain="zope"
   ...            package="zope.viewlet.tests">
@@ -42,26 +39,19 @@ directive::
   ...       template="%s"
   ...       permission="zope.Public"
   ...       />
-  ...   <viewlet
-  ...       name="testviewlet"
-  ...       for="*"
-  ...       providerType="zope.viewlet.tests.ILeftViewlet"
-  ...       template="%s"
-  ...       permission="zope.Public"
-  ...       />
   ... </configure>
-  ... ''' % (testViewletManager, testViewlet), context=context)
-
+  ... ''' % (testViewletManager), context=context)
+  
 As you can see, the directive looks very similar to the page directive and you
-are right. The viewlet directive does not permit you to specify a `menu` and
-`title`, since it is not sensible to have a menu item for a viewlet. However,
-it does support two more qualifying attributes, `view` and `region`. While view
-is nearly never specified (very common default), the `region` attribute *must*
-be specified. An optional `weight` attribute (not shown above) allows you to
-change the position of a particular viewlet relative to the others. The
-default value is zero.
+are right. The viewlet manager directive does not permit you to specify a
+`menu` and `title`, since it is not sensible to have a menu item for a viewlet.
+However, it does support two more qualifying attributes, `view` and
+`providerType`. While view is nearly never specified (very common default),
+the `providerType` attribute *must* be specified.
 
-If we now look into the adapter registry, we will find the viewlet:
+# More (and more precise) information needed here...
+
+If we now look into the adapter registry, we will find the viewlet manager:
 
   >>> class Content(object):
   ...     zope.interface.implements(zope.interface.Interface)
@@ -74,13 +64,51 @@ If we now look into the adapter registry, we will find the viewlet:
   >>> view = BrowserView(content, request)
 
   >>> import zope.interface
-  >>> from zope.viewlet.interfaces import IViewlet, IViewletManager
+  >>> from zope.viewlet.interfaces import IViewletManager
   
   >>> manager = zapi.getMultiAdapter(
   ...     (content, request, view), IViewletManager, name='testviewlet')
+
+As we did not yet associate viewlets with this viewlet manager, calling it
+gives us an empty string:
+
+  >>> manager().strip()
+  u''
+
+So let's now create a viewlet for the viewlet manager:
+
+  >>> testViewlet = os.path.join(temp_dir, 'testviewlet.pt')
+  >>> open(testViewlet, 'w').write('''
+  ... <div>testviewlet content</div>
+  ... ''')
+  
+  >>> context = xmlconfig.string('''
+  ... <configure xmlns="http://namespaces.zope.org/browser" i18n_domain="zope"
+  ...            package="zope.viewlet.tests">
+  ...   <viewlet
+  ...       name="testviewlet"
+  ...       for="*"
+  ...       providerType="zope.viewlet.tests.ILeftViewlet"
+  ...       template="%s"
+  ...       permission="zope.Public"
+  ...       />
+  ... </configure>
+  ... ''' % (testViewlet), context=context)
+
+The ``viewlet`` directive is similar to the viewletManager directive.
+
+If we look into the adapter registry, we will find the viewlet:
+
+  >>> from zope.viewlet.interfaces import IViewlet
+  
   >>> viewlet = zapi.getMultiAdapter(
   ...     (content, request, view, manager), IViewlet, name='testviewlet')
   >>> viewlet().strip()
+  u'<div>testviewlet content</div>'
+
+The manager now also gives us the output of the one and only viewlet:
+
+  >>> manager().strip()
   u'<div>testviewlet content</div>'
 
 Let's now ensure that we can also specify a viewlet class:
@@ -104,7 +132,7 @@ Let's now ensure that we can also specify a viewlet class:
   >>> viewlet().strip()
   u'<div>testviewlet content</div>'
 
-#Okay, so the template-driven cases wrok. But just specifying a class should
+#Okay, so the template-driven cases work. But just specifying a class should
 #also work:
 #
 #  >>> context = xmlconfig.string('''
