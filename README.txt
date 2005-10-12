@@ -213,6 +213,9 @@ Viewlet Base Classes
 A Complex Example
 -----------------
 
+The Data
+~~~~~~~~
+
 So far we have only demonstrated simple (maybe overly trivial) use cases of
 the viewlet system. In the following example, we are going to develop a
 generic contents view for files. The step is to create a file component:
@@ -259,6 +262,10 @@ Here is some sample data:
   >>> container['mypage.html'] = File('<html><body>Hello World!</body></html>')
   >>> container['data.xml'] = File('<message>Hello World!</message>')
 
+
+The View
+~~~~~~~~
+
 The contents view of the container should iterate through the container and
 represent the files in a table:
 
@@ -276,6 +283,9 @@ represent the files in a table:
   >>> Contents = SimpleViewClass(contentsTemplate, name='contents.html')
 
 
+The Viewlet Manager
+~~~~~~~~~~~~~~~~~~~
+
 Now we have to write our own viewlet manager. In this case we cannot use the
 default implementation, since the viewlets will be looked up for each
 different item:
@@ -283,6 +293,7 @@ different item:
   >>> shownColumns = []
 
   >>> class ContentsViewletManager(object):
+  ...     zope.interface.implements(interfaces.IViewletManager)
   ...     index = None
   ...
   ...     def __init__(self, context, request, view):
@@ -328,7 +339,7 @@ register it (it's a bit tedious, I know):
   >>> zope.component.provideAdapter(
   ...     ContentsViewletManager,
   ...     (Container, IDefaultBrowserLayer, zope.interface.Interface),
-  ...     interfaces.IViewletManager,name='contents')
+  ...     interfaces.IViewletManager, name='contents')
 
 Since we have not defined any viewlets yet, the table is totally empty:
 
@@ -350,6 +361,10 @@ Since we have not defined any viewlets yet, the table is totally empty:
     </body>
   </html>
 
+
+The Viewlets and the Final Result
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Now let's create a first viewlet for the manager...
 
   >>> class NameViewlet(object):
@@ -365,7 +380,7 @@ and register it:
   >>> zope.component.provideAdapter(
   ...     NameViewlet,
   ...     (IFile, IDefaultBrowserLayer,
-  ...      zope.interface.Interface, ContentsViewletManager),
+  ...      zope.interface.Interface, interfaces.IViewletManager),
   ...     interfaces.IViewlet, name='name')
 
 Note how you register the viewlet on ``IFile`` and not on the container. Now
@@ -398,185 +413,310 @@ that we want to see the name as a column in the table:
     <body>
       <h1>Cotnents</h1>
       <div>
-  <table>
-    <tr>
-      <td>
-        mypage.html
-      </td>
-    </tr>
-    <tr>
-      <td>
-        data.xml
-      </td>
-    </tr>
-    <tr>
-      <td>
-        test.txt
-      </td>
-    </tr>
-  </table>
-  </div>
+        <table>
+          <tr>
+            <td>
+              mypage.html
+            </td>
+          </tr>
+          <tr>
+            <td>
+              data.xml
+            </td>
+          </tr>
+          <tr>
+            <td>
+              test.txt
+            </td>
+          </tr>
+        </table>
+      </div>
+    </body>
+  </html>
+
+Let's now write a second viewlet that will display the size of the object for
+us:
+
+  >>> class SizeViewlet(object):
+  ...
+  ...     def __init__(self, context, request, view, manager):
+  ...         self.context = context
+  ...
+  ...     def __call__(self):
+  ...         return size.interfaces.ISized(self.context).sizeForDisplay()
+
+  >>> zope.component.provideAdapter(
+  ...     SizeViewlet,
+  ...     (IFile, IDefaultBrowserLayer,
+  ...      zope.interface.Interface, interfaces.IViewletManager),
+  ...     interfaces.IViewlet, name='size')
+
+After we added it to the list of shown columns,
+
+  >>> shownColumns = ['name', 'size']
+
+we can see an entry for it:
+
+  >>> print contents().strip()
+  <html>
+    <body>
+      <h1>Cotnents</h1>
+      <div>
+        <table>
+          <tr>
+            <td>
+              mypage.html
+            </td>
+            <td>
+              38 bytes
+            </td>
+          </tr>
+          <tr>
+            <td>
+              data.xml
+            </td>
+            <td>
+              31 bytes
+            </td>
+          </tr>
+          <tr>
+            <td>
+              test.txt
+            </td>
+            <td>
+              12 bytes
+            </td>
+          </tr>
+        </table>
+      </div>
+    </body>
+  </html>
+
+If we switch the two columns around,
+
+  >>> shownColumns = ['size', 'name']
+
+the result will be
+
+  >>> print contents().strip()
+  <html>
+    <body>
+      <h1>Cotnents</h1>
+      <div>
+        <table>
+          <tr>
+            <td>
+              38 bytes
+            </td>
+            <td>
+              mypage.html
+            </td>
+          </tr>
+          <tr>
+            <td>
+              31 bytes
+            </td>
+            <td>
+              data.xml
+            </td>
+          </tr>
+          <tr>
+            <td>
+              12 bytes
+            </td>
+            <td>
+              test.txt
+            </td>
+          </tr>
+        </table>
+      </div>
     </body>
   </html>
 
 
+Supporting Sorting
+~~~~~~~~~~~~~~~~~~
 
-#
-#Viewlet
-#~~~~~~~
-#
-#Viewlets are snippets of content that can be placed into a region, such as the
-#one defined above. As the name suggests, viewlets are views, but they are
-#qualified not only by the context object and the request, but also the view
-#they appear in. Also, the viewlet must *provide* the region interface it is
-#filling; we will demonstrate a more advanced example later, where the purpose
-#of this requirement becomes clear.
-#
-#Like regular views, viewlets can either use page templates to provide content
-#or provide a simple ``__call__`` method. For our first viewlet, let's develop
-#a more commonly used page-template-driven viewlet:
-#
-#  >>> import os, tempfile
-#  >>> temp_dir = tempfile.mkdtemp()
-#
-#  >>> viewletFileName = os.path.join(temp_dir, 'viewlet.pt')
-#  >>> open(viewletFileName, 'w').write('''
-#  ...         <div class="box">
-#  ...           <tal:block replace="viewlet/title" />
-#  ...         </div>
-#  ... ''')
-#
-#  >>> class ViewletBase(object):
-#  ...     def title(self):
-#  ...         return 'Viewlet Title'
-#
-#As you can see, the viewlet Python object is known as ``viewlet`` inside the
-#template, while the view object is still available as ``view``. Next we build
-#and register the viewlet using a special helper function:
-#
-#  # Create the viewlet class
-#  >>> from zope.viewlet import viewlet
-#  >>> Viewlet = viewlet.SimpleViewletClass(
-#  ...     viewletFileName, bases=(ViewletBase,), name='viewlet')
-#
-#  # Generate a viewlet checker
-#  >>> from zope.security.checker import NamesChecker, defineChecker
-#  >>> viewletChecker = NamesChecker(('__call__', 'weight', 'title',))
-#  >>> defineChecker(Viewlet, viewletChecker)
-#
-#  # Register the viewlet with component architecture
-#  >>> from zope.publisher.interfaces.browser import IDefaultBrowserLayer
-#  >>> from zope.app.publisher.interfaces.browser import IBrowserView
-#  >>> zope.component.provideAdapter(
-#  ...     Viewlet,
-#  ...     (zope.interface.Interface, IDefaultBrowserLayer, IBrowserView),
-#  ...     ILeftColumn,
-#  ...     name='viewlet')
-#
-#As you can see from the security checker registration, a viewlet provides also
-#a weight, which acts as a hint to determine the order in which the viewlets of
-#a region should be displayed. The view the viewlet is used in can also be
-#accessed via the ``view`` attribute of the viewlet class.
-#
-#
-#
-#
-#An Alternative Content Provider Manager
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#
-#Let's now imagine that we would like to allow the user to choose the columns
-#for the contents view. Here it would not be enough to implement a condition as
-#part of the viewlet class, since the TD tag appearance is not controlled by
-#the viewlet itself. In those cases it is best to implement a custom content
-#provider manager that only returns the viewlets that are specified in an
-#option:
-#
-#  >>> showColumns = ['name', 'size']
-#
-#So our custom content provider manager could look something like this:
-#
-#  >>> from zope.contentprovider import manager
-#  >>> from zope.contentprovider.interfaces import IContentProviderManager
-#  >>> class ContentsContentProviderManager(manager.DefaultContentProviderManager):
-#  ...
-#  ...     def values(self):
-#  ...         viewlets = zope.component.getAdapters(
-#  ...             (self.context, self.request, self.view), self.region)
-#  ...         viewlets = [(name, viewlet) for name, viewlet in viewlets
-#  ...                     if name in showColumns]
-#  ...         viewlets.sort(lambda x, y: cmp(showColumns.index(x[0]),
-#  ...                                        showColumns.index(y[0])))
-#  ...         return [viewlet for name, viewlet in viewlets]
-#
-#We just have to register it as an adapter:
-#
-#  >>> zope.component.provideAdapter(
-#  ...     ContentsContentProviderManager,
-#  ...     (zope.interface.Interface, IDefaultBrowserLayer, IBrowserView,
-#  ...      IObjectInfoColumn),
-#  ...     IContentProviderManager)
-#
-#  >>> view = zope.component.getMultiAdapter(
-#  ...     (content, request), name='contents.html')
-#  >>> print view().strip()
-#  <html>
-#    <body>
-#      <h1>Contents</h1>
-#      <table>
-#        <tr>
-#          <td><b>README.txt</b></td>
-#          <td>1.2kB</td>
-#        </tr>
-#        <tr>
-#          <td><b>logo.png</b></td>
-#          <td>100 x 100</td>
-#        </tr>
-#      </table>
-#    </body>
-#  </html>
-#
-#But if I turn the order around,
-#
-#  >>> showColumns = ['size', 'name']
-#
-#it will provide the columns in a different order as well:
-#
-#  >>> print view().strip()
-#  <html>
-#    <body>
-#      <h1>Contents</h1>
-#      <table>
-#        <tr>
-#          <td>1.2kB</td>
-#          <td><b>README.txt</b></td>
-#        </tr>
-#        <tr>
-#          <td>100 x 100</td>
-#          <td><b>logo.png</b></td>
-#        </tr>
-#      </table>
-#    </body>
-#  </html>
-#
-#On the other hand, it is as easy to remove a column:
-#
-#  >>> showColumns = ['name']
-#  >>> print view().strip()
-#  <html>
-#    <body>
-#      <h1>Contents</h1>
-#      <table>
-#        <tr>
-#          <td><b>README.txt</b></td>
-#        </tr>
-#        <tr>
-#          <td><b>logo.png</b></td>
-#        </tr>
-#      </table>
-#    </body>
-#  </html>
-#
-#
+Oftentimes you also want to batch and sort the entries in a table. Since those
+two features are not part of the view logic, they should be treated with
+independent components. In this example, we are going to only implement
+sorting using a simple utility:
+
+  >>> class ISorter(zope.interface.Interface):
+  ...
+  ...     def sort(values):
+  ...         """Sort the values."""
+
+  >>> class SortByName(object):
+  ...     zope.interface.implements(ISorter)
+  ...
+  ...     def sort(self, values):
+  ...         return sorted(values, lambda x, y: cmp(x.__name__, y.__name__))
+
+  >>> zope.component.provideUtility(SortByName(), name='name')
+
+  >>> class SortBySize(object):
+  ...     zope.interface.implements(ISorter)
+  ...
+  ...     def sort(self, values):
+  ...         return sorted(
+  ...             values,
+  ...             lambda x, y: cmp(size.interfaces.ISized(x).sizeForSorting(),
+  ...                              size.interfaces.ISized(y).sizeForSorting()))
+
+  >>> zope.component.provideUtility(SortBySize(), name='size')
+
+Note that we decided to give the sorter utilities the same name as the
+corresponding viewlet. This convention will make our implementation of the
+viewlet manager much simpler:
+
+  >>> sortByColumn = ''
+
+  >>> class SortedContentsViewletManager(object):
+  ...     zope.interface.implements(interfaces.IViewletManager)
+  ...     index = None
+  ...
+  ...     def __init__(self, context, request, view):
+  ...         self.context = context
+  ...         self.request = request
+  ...         self.view = view
+  ...
+  ...     def rows(self):
+  ...         values = self.context.values()
+  ...
+  ...         if sortByColumn:
+  ...            sorter = zope.component.queryUtility(ISorter, sortByColumn)
+  ...            if sorter:
+  ...                values = sorter.sort(values)
+  ...
+  ...         rows = []
+  ...         for value in values:
+  ...             rows.append(
+  ...                 [zope.component.getMultiAdapter(
+  ...                     (value, self.request, self.view, self),
+  ...                     interfaces.IViewlet, name=colname)
+  ...                  for colname in shownColumns])
+  ...         return rows
+  ...
+  ...     def __call__(self, *args, **kw):
+  ...         return self.index(*args, **kw)
+
+As you can see, the concern of sorting is cleanly separated from generating
+the view code. In MVC terms that means that the controller (sort) is logically
+separated from the view (viewlets). Let's now do the registration dance for
+the new viewlet manager. We simply override the existing registration:
+
+  >>> SortedContentsViewletManager = type(
+  ...     'SortedContentsViewletManager', (SortedContentsViewletManager,),
+  ...     {'index': ViewPageTemplateFile(tableTemplate)})
+
+  >>> zope.component.provideAdapter(
+  ...     SortedContentsViewletManager,
+  ...     (Container, IDefaultBrowserLayer, zope.interface.Interface),
+  ...     interfaces.IViewletManager, name='contents')
+
+Finally we sort the contents by name:
+
+  >>> shownColumns = ['name', 'size']
+  >>> sortByColumn = 'name'
+
+  >>> print contents().strip()
+  <html>
+    <body>
+      <h1>Cotnents</h1>
+      <div>
+        <table>
+          <tr>
+            <td>
+              data.xml
+            </td>
+            <td>
+              31 bytes
+            </td>
+          </tr>
+          <tr>
+            <td>
+              mypage.html
+            </td>
+            <td>
+              38 bytes
+            </td>
+          </tr>
+          <tr>
+            <td>
+              test.txt
+            </td>
+            <td>
+              12 bytes
+            </td>
+          </tr>
+        </table>
+      </div>
+    </body>
+  </html>
+
+Now let's sort by size:
+
+  >>> sortByColumn = 'size'
+
+  >>> print contents().strip()
+  <html>
+    <body>
+      <h1>Cotnents</h1>
+      <div>
+        <table>
+          <tr>
+            <td>
+              test.txt
+            </td>
+            <td>
+              12 bytes
+            </td>
+          </tr>
+          <tr>
+            <td>
+              data.xml
+            </td>
+            <td>
+              31 bytes
+            </td>
+          </tr>
+          <tr>
+            <td>
+              mypage.html
+            </td>
+            <td>
+              38 bytes
+            </td>
+          </tr>
+        </table>
+      </div>
+    </body>
+  </html>
+
+That's it! As you can see, in a few steps we have built a pretty flexible
+contents view with selectable columns and sorting. However, there is a lot of
+room for extending this example:
+
+- Table Header: The table header cell for each column should be a different
+  type of viewlet, but registered under the same name. The column header
+  viewlet also adapts the container not the item. The header column should
+  also be able to control the sorting.
+
+- Batching: A simple implementation of batching should work very similar to
+  the sorting feature. Of course, efficient implementations should somehow
+  combine batching and sorting more effectively.
+
+- Sorting in ascending and descending order: Currently, you can only sort from
+  the smallest to the highest value; however, this limitation is almost
+  superficial and can easily be removed by making the sorters a bit more
+  flexible.
+
+- Further Columns: For a real application, you would want to implement other
+  columns, of course. You would also probably want some sort of fallback for
+  the case that a viewlet is not found for a particular container item and
+  column.
+
 
 Cleanup
 -------
