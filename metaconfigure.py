@@ -30,27 +30,21 @@ from zope.app.component import metaconfigure
 from zope.app.publisher.browser import viewmeta
 from zope.app.publisher.interfaces.browser import IBrowserView
 
-#from zope.contentprovider.interfaces import IWeightSupport
-from zope.viewlet import viewlet
-from zope.viewlet import manager
-from zope.viewlet import interfaces
+from zope.viewlet import viewlet, manager, interfaces
 
+def viewletManagerDirective(
+    _context, name, permission,
+    for_=Interface, layer=IDefaultBrowserLayer, view=IBrowserView,
+    provides=interfaces.IViewletManager, class_=None, template=None,
+    allowed_interface=None, allowed_attributes=None):
 
-# TODO: remove weight out of viewlet manager directive
-# TODO: support default class_
-# TODO: do we need a allowed_interface ?
-# TODO: 
-def viewletManagerDirective(_context, name, permission, providerType,
-                     for_=Interface, layer=IDefaultBrowserLayer,
-                     view=IBrowserView, 
-                     class_=None, template=None, allowed_interface=None):
-
+    # A list of attributes available under the provided permission
     required = {}
 
     # Get the permission; mainly to correctly handle CheckerPublic.
     permission = viewmeta._handle_permission(_context, permission)
 
-    # If class is not given we use the default viewlet manager.
+    # If class is not given we use the basic viewlet manager.
     if class_ is None:
         class_ = manager.ViewletManagerBase
 
@@ -64,49 +58,53 @@ def viewletManagerDirective(_context, name, permission, providerType,
 
         # Create a new class based on the template and class.
         new_class = manager.ViewletManager(
-            providerType, bases=(class_, ))
+            provides, template=template, bases=(class_, ))
+    else:
+        # Create a new class based on the class.
+        new_class = manager.ViewletManager(provides, bases=(class_, ))
 
-    if hasattr(new_class, '__implements__'):
-        classImplements(new_class, IBrowserPublisher)
-
-    # set providerType if the class_ defines the global attribute
-    if hasattr(class_, 'providerType'):
-        classImplements(new_class, providerType)
-
-    for attr_name in ('browserDefault', '__call__',
-                      'publishTraverse'):
+    # Register some generic attributes with the security dictionary
+    for attr_name in ('browserDefault', '__call__', 'publishTraverse'):
         required[attr_name] = permission
 
+    # Register the ``provides`` interface and register fields in the security
+    # dictionary
+    viewmeta._handle_allowed_interface(
+        _context, (provides,), permission, required)
+
+    # Register the allowed interface and add the field's security entries
     viewmeta._handle_allowed_interface(
         _context, allowed_interface, permission, required)
 
+    # Register single allowed attributes in the security dictionary
+    viewmeta._handle_allowed_attributes(
+        _context, allowed_attributes, permission, required)
+
+    # Register interfaces
     viewmeta._handle_for(_context, for_)
     metaconfigure.interface(_context, view)
 
+    # Create a checker for the viewlet manager
     checker.defineChecker(new_class, checker.Checker(required))
 
-    # register viewlet
+    # register a viewlet manager
     _context.action(
         discriminator = ('viewletManager', for_, layer, view, name),
         callable = metaconfigure.handler,
         args = ('provideAdapter',
-                (for_, layer, view), interfaces.IViewletManager, name,
+                (for_, layer, view), provides, name,
                  new_class, _context.info),)
 
 
+def viewletDirective(
+    _context, name, permission,
+    for_=Interface, layer=IDefaultBrowserLayer, view=IBrowserView,
+    manager=interfaces.IViewletManager, class_=None, template=None,
+    attribute='__call__', allowed_interface=None, allowed_attributes=None,
+    **kwargs):
 
-# TODO: support None for weight
-def viewletDirective(_context, name, permission, providerType, for_=Interface, 
-                     layer=IDefaultBrowserLayer, view=IBrowserView, 
-                     class_=None, template=None, attribute='__call__', 
-                     weight=None, allowed_interface=None, 
-                     allowed_attributes=None):
-
+    # Security map dictionary
     required = {}
-
-    #if interfaces.IWeightSupport.implementedBy(class_) and weight == None:
-    #    msg = "Must specify a weight if IWeightSupport is implemented"
-    #    raise ConfigurationError(msg)
 
     # Get the permission; mainly to correctly handle CheckerPublic.
     permission = viewmeta._handle_permission(_context, permission)
@@ -144,19 +142,17 @@ def viewletDirective(_context, name, permission, providerType, for_=Interface,
         if template:
             # Create a new class for the viewlet template and class.
             new_class = viewlet.SimpleViewletClass(
-                template, bases=(class_, ), weight=weight)
+                template, bases=(class_, ), attributes=kwargs)
         else:
             if not hasattr(class_, 'browserDefault'):
-                cdict = {
-                    'browserDefault':
-                    lambda self, request: (getattr(self, attribute), ())
-                    }
+                cdict = {'browserDefault':
+                         lambda self, request: (getattr(self, attribute), ())}
             else:
                 cdict = {}
 
-            cdict['_weight'] = weight
             cdict['__name__'] = name
             cdict['__page_attribute__'] = attribute
+            cdict.update(kwargs)
             new_class = type(class_.__name__,
                              (class_, viewlet.SimpleAttributeViewlet), cdict)
 
@@ -165,31 +161,31 @@ def viewletDirective(_context, name, permission, providerType, for_=Interface,
 
     else:
         # Create a new class for the viewlet template alone.
-        new_class = viewlet.SimpleViewletClass(
-            template, name=name, weight=weight)
+        new_class = viewlet.SimpleViewletClass(template, name=name)
 
-    # set providerType if the class_ defines the global attribute
-    if hasattr(new_class, 'providerType'):
-        classImplements(new_class, providerType)
-
-    for attr_name in (attribute, 'browserDefault', '__call__',
-                      'publishTraverse', 'weight'):
-        required[attr_name] = permission
-
+    # Set up permission mapping for various accessible attributes
     viewmeta._handle_allowed_interface(
         _context, allowed_interface, permission, required)
     viewmeta._handle_allowed_attributes(
-        _context, allowed_interface, permission, required)
+        _context, allowed_attributes, permission, required)
+    viewmeta._handle_allowed_attributes(
+        _context, kwargs.keys(), permission, required)
+    viewmeta._handle_allowed_attributes(
+        _context,
+        (attribute, 'browserDefault', '__call__', 'publishTraverse'),
+        permission, required)
 
+    # Register the interfaces.
     viewmeta._handle_for(_context, for_)
     metaconfigure.interface(_context, view)
 
+    # Create the security checker for the new class
     checker.defineChecker(new_class, checker.Checker(required))
 
     # register viewlet
     _context.action(
-        discriminator = ('viewlet', for_, layer, view, name, providerType),
+        discriminator = ('viewlet', for_, layer, view, manager, name),
         callable = metaconfigure.handler,
         args = ('provideAdapter',
-                (for_, layer, view, providerType), interfaces.IViewlet,
+                (for_, layer, view, manager), interfaces.IViewlet,
                  name, new_class, _context.info),)

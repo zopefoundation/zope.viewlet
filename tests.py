@@ -24,29 +24,9 @@ from zope.testing import doctest
 from zope.testing.doctestunit import DocTestSuite, DocFileSuite
 from zope.app.testing import setup
 
-from zope.viewlet import interfaces
-
-
 class TestParticipation(object):
     principal = 'foobar'
     interaction = None
-
-
-class ILeftViewlet(interfaces.IViewlet):
-    """Test viewlet type."""
-
-
-class TestViewlet(object):
-
-    def doSomething(self):
-        return u'something'
-
-
-class TestViewlet2(object):
-
-    def __call__(self):
-        return u'called'
-
 
 def setUp(test):
     setup.placefulSetUp()
@@ -57,9 +37,17 @@ def setUp(test):
 
     zope.security.management.getInteraction().add(TestParticipation())
 
+def directivesSetUp(test):
+    setUp(test)
+    setup.setUpTestAsModule(test, 'zope.viewlet.directives')
+
 
 def tearDown(test):
     setup.placefulTearDown()
+
+def directivesTearDown(test):
+    tearDown(test)
+    setup.tearDownTestAsModule(test)
 
 
 def test_suite():
@@ -69,7 +57,7 @@ def test_suite():
                      optionflags=doctest.NORMALIZE_WHITESPACE|doctest.ELLIPSIS,
                      ),
         DocFileSuite('directives.txt',
-                     setUp=setUp, tearDown=tearDown,
+                     setUp=directivesSetUp, tearDown=directivesTearDown,
                      optionflags=doctest.NORMALIZE_WHITESPACE|doctest.ELLIPSIS,
                      ),
         ))

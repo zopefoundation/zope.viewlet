@@ -44,18 +44,9 @@ class SimpleViewlet(BrowserView):
 
     zope.interface.implements(interfaces.IViewlet)
 
-    _weight = 0
-
     def __init__(self, context, request, view, providerType):
         super(SimpleViewlet, self).__init__(context, request)
         self.view = view
-
-    def _getWeight (self):
-        """The weight of the viewlet."""
-        return self._weight
-
-    # See zope.app.viewlet.interfaces.IViewlet
-    weight = property(_getWeight)
 
 
 class SimpleAttributeViewlet(SimpleViewlet):
@@ -75,7 +66,8 @@ class SimpleAttributeViewlet(SimpleViewlet):
         return meth(*args, **kw)
 
 
-def SimpleViewletClass(template, offering=None, bases=(), name=u'', weight=0):
+def SimpleViewletClass(template, offering=None, bases=(), attributes=None,
+                       name=u''):
     # Get the current frame
     if offering is None:
         offering = sys._getframe(1).f_globals
@@ -83,11 +75,13 @@ def SimpleViewletClass(template, offering=None, bases=(), name=u'', weight=0):
     # Create the base class hierarchy
     bases += (SimpleViewlet, simple)
 
+    attrs = {'index' : ViewletPageTemplateFile(template, offering),
+             '__name__' : name}
+    if attributes:
+        attrs.update(attributes)
+
     # Generate a derived view class.
-    class_ = type("SimpleViewletClass from %s" % template, bases,
-                  {'index' : ViewletPageTemplateFile(template, offering),
-                   '_weight' : weight,
-                   '__name__' : name})
+    class_ = type("SimpleViewletClass from %s" % template, bases, attrs)
 
     return class_
 
