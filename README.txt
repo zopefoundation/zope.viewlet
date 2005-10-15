@@ -209,6 +209,155 @@ Of course, we also can remove a shown viewlet:
 Viewlet Base Classes
 --------------------
 
+To make the creation of viewlets simpler, a set of useful base classes and
+helper functions are provided:
+
+  >>> from zope.viewlet import viewlet
+
+The first class is a base class that simply defines the constructor:
+
+  >>> base = viewlet.ViewletBase('context', 'request', 'view', 'manager')
+  >>> base.context
+  'context'
+  >>> base.request
+  'request'
+  >>> base.view
+  'view'
+  >>> base.manager
+  'manager'
+
+But a default `__call__()` method implementation is not provided:
+
+  >>> base()
+  Traceback (most recent call last):
+  ...
+  NotImplementedError: `__call__` method must be implemented by subclass.
+
+If you have already an existing class that produces the HTML content in some
+method, then the ``SimpleAttributeViewlet`` might be for you, since it can be
+used to convert any class quickly into a viewlet:
+
+  >>> class FooViewlet(viewlet.SimpleAttributeViewlet):
+  ...     __page_attribute__ = 'foo'
+  ...
+  ...     def foo(self):
+  ...         return 'output'
+
+The `__page_attribute__` attribute provides the name of the function to call for
+rendering.
+
+  >>> foo = FooViewlet('context', 'request', 'view', 'manager')
+  >>> foo.foo()
+  'output'
+  >>> foo()
+  'output'
+
+If you specify `__call__` as the attribute an error is raised to prevent
+infinite recursion:
+
+  >>> foo.__page_attribute__ = '__call__'
+  >>> foo()
+  Traceback (most recent call last):
+  ...
+  AttributeError: __call__
+
+The same is true if the specified attribute does not exist:
+
+  >>> foo.__page_attribute__ = 'bar'
+  >>> foo()
+  Traceback (most recent call last):
+  ...
+  AttributeError: 'FooViewlet' object has no attribute 'bar'
+
+To create simple template-based viewlets you can use the
+``SimpleViewletClass()`` function. This function is very similar to its view
+equivalent and is used by the ZCML directives to create viewlets. The result
+of this function call will be a fully functional viewlet class. Let's start by
+simply specifying a template only:
+
+  >>> template = os.path.join(temp_dir, 'demoTemplate.pt')
+  >>> open(template, 'w').write('''<div>contents</div>''')
+
+  >>> Demo = viewlet.SimpleViewletClass(template)
+  >>> print Demo(content, request, view, manager)()
+  <div>contents</div>
+
+Now let's additionally specify a class that can provide additional features:
+
+  >>> class MyViewlet(object):
+  ...     myAttribute = 8
+
+  >>> Demo = viewlet.SimpleViewletClass(template, bases=(MyViewlet,))
+  >>> MyViewlet in Demo.__bases__
+  True
+  >>> Demo(content, request, view, manager).myAttribute
+  8
+
+The final important feature is the ability to pass in further attributes to
+the class:
+
+  >>> Demo = viewlet.SimpleViewletClass(
+  ...     template, attributes={'here': 'now', 'lucky': 3})
+  >>> demo = Demo(content, request, view, manager)
+  >>> demo.here
+  'now'
+  >>> demo.lucky
+  3
+
+As for all views, they must provide a name that can also be passed to the
+function:
+
+  >>> Demo = viewlet.SimpleViewletClass(template, name='demoViewlet')
+  >>> demo = Demo(content, request, view, manager)
+  >>> demo.__name__
+  'demoViewlet'
+
+In addition to the the generic viewlet code above, the package comes with two
+viewlet base classes and helper functions for inserting CSS and Javascript
+links into HTML headers, since those two are so very common. I am only going
+to demonstrate the helper functions here, since those demonstrations will
+fully demonstrate the functionality of the base classes as well.
+
+The viewlet will look up the resource it was given and tries to produce the
+absolute URL for it:
+
+  >>> class JSResource(object):
+  ...     def __init__(self, request):
+  ...         self.request = request
+  ...
+  ...     def __call__(self):
+  ...         return '/@@/resource.js'
+
+  >>> from zope.app.testing import ztapi
+  >>> ztapi.browserResource('resource.js', JSResource)
+
+  >>> JSViewlet = viewlet.JavaScriptViewlet('resource.js')
+  >>> print JSViewlet(content, request, view, manager)().strip()
+  <script type="text/javascript" src="/@@/resource.js">
+  </script>
+
+The same works for the CSS resource viewlet:
+
+  >>> class CSSResource(object):
+  ...     def __init__(self, request):
+  ...         self.request = request
+  ...
+  ...     def __call__(self):
+  ...         return '/@@/resource.css'
+
+  >>> ztapi.browserResource('resource.css', CSSResource)
+
+  >>> CSSViewlet = viewlet.CSSViewlet('resource.css')
+  >>> print CSSViewlet(content, request, view, manager)().strip()
+  <link type="text/css" rel="stylesheet"
+        href="/@@/resource.css" media="all" />
+
+You can also change the media type and the rel attribute:
+
+  >>> CSSViewlet = viewlet.CSSViewlet('resource.css', media='print', rel='css')
+  >>> print CSSViewlet(content, request, view, manager)().strip()
+  <link type="text/css" rel="css" href="/@@/resource.css"
+        media="print" />
 
 
 A Complex Example

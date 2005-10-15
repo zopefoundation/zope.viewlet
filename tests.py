@@ -22,7 +22,7 @@ import zope.interface
 import zope.security
 from zope.testing import doctest
 from zope.testing.doctestunit import DocTestSuite, DocFileSuite
-from zope.app.testing import setup
+from zope.app.testing import setup, ztapi
 
 class TestParticipation(object):
     principal = 'foobar'
@@ -30,6 +30,12 @@ class TestParticipation(object):
 
 def setUp(test):
     setup.placefulSetUp()
+
+    # resource namespace setup
+    from zope.app.traversing.interfaces import ITraversable
+    from zope.app.traversing.namespace import resource
+    ztapi.provideAdapter(None, ITraversable, resource, name="resource")
+    ztapi.provideView(None, None, ITraversable, "resource", resource)
 
     from zope.app.pagetemplate import metaconfigure
     from zope.contentprovider import tales

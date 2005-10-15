@@ -29,30 +29,28 @@ from zope.app.traversing import api
 from zope.viewlet import interfaces
 
 
-class ViewletPageTemplateFile(ViewPageTemplateFile):
-
-    def pt_getContext(self, instance, request, **_kw):
-        namespace = super(ViewletPageTemplateFile, self).pt_getContext(
-            instance, request, **_kw)
-        namespace['view'] = instance.view
-        namespace['viewlet'] = instance
-        return namespace
-
-
-class SimpleViewlet(BrowserView):
+class ViewletBase(BrowserView):
     """Viewlet adapter class used in meta directive as a mixin class."""
 
     zope.interface.implements(interfaces.IViewlet)
 
-    def __init__(self, context, request, view, providerType):
-        super(SimpleViewlet, self).__init__(context, request)
+    def __init__(self, context, request, view, manager):
+        super(ViewletBase, self).__init__(context, request)
+        # TODO: We need to evaluate whether we really want to expose all those
+        # objects in the object. Theoretically, we only want `request` and
+        # `manager`.
+        self.context = context
+        self.request = request
         self.view = view
+        self.manager = manager
+
+    def __call__(self):
+        raise NotImplementedError(
+            '`__call__` method must be implemented by subclass.')
 
 
-class SimpleAttributeViewlet(SimpleViewlet):
-
-    def publishTraverse(self, request, name):
-        raise NotFound(self, name, request)
+class SimpleAttributeViewlet(ViewletBase):
+    """A viewlet that uses a specified method to produce its content."""
 
     def __call__(self, *args, **kw):
         # If a class doesn't provide it's own call, then get the attribute
@@ -68,14 +66,17 @@ class SimpleAttributeViewlet(SimpleViewlet):
 
 def SimpleViewletClass(template, offering=None, bases=(), attributes=None,
                        name=u''):
+    """A function that can be used to generate a viewlet from a set of
+    information.
+    """
     # Get the current frame
     if offering is None:
         offering = sys._getframe(1).f_globals
 
     # Create the base class hierarchy
-    bases += (SimpleViewlet, simple)
+    bases += (simple, ViewletBase)
 
-    attrs = {'index' : ViewletPageTemplateFile(template, offering),
+    attrs = {'index' : ViewPageTemplateFile(template, offering),
              '__name__' : name}
     if attributes:
         attrs.update(attributes)
@@ -87,7 +88,10 @@ def SimpleViewletClass(template, offering=None, bases=(), attributes=None,
 
 
 class ResourceViewletBase(object):
+    """A simple viewlet for inserting references to resources.
 
+    This is an abstract class that is expected to be used as a base only.
+    """
     _path = None
 
     def getURL(self):
@@ -104,8 +108,8 @@ def JavaScriptViewlet(path):
     src = os.path.join(os.path.dirname(__file__), 'javascript_viewlet.pt')
 
     klass = type('JavaScriptViewlet',
-                 (ResourceViewletBase, SimpleViewlet),
-                  {'index': ViewletPageTemplateFile(src),
+                 (ResourceViewletBase, ViewletBase),
+                  {'index': ViewPageTemplateFile(src),
                    '_path': path})
 
     return klass
@@ -128,8 +132,8 @@ def CSSViewlet(path, media="all", rel="stylesheet"):
     src = os.path.join(os.path.dirname(__file__), 'css_viewlet.pt')
 
     klass = type('CSSViewlet',
-                 (CSSResourceViewletBase, SimpleViewlet),
-                  {'index': ViewletPageTemplateFile(src),
+                 (CSSResourceViewletBase, ViewletBase),
+                  {'index': ViewPageTemplateFile(src),
                    '_path': path,
                    '_media':media,
                    '_rel':rel})
