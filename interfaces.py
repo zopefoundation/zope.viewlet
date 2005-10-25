@@ -19,7 +19,7 @@ __docformat__ = 'restructuredtext'
 
 import zope.interface
 import zope.schema
-from zope.app.i18n import ZopeMessageFactory as _
+from zope.app.i18n import ZopeMessageIDFactory as _
 
 from zope.contentprovider.interfaces import IContentProvider
 from zope.interface.common.mapping import IReadMapping

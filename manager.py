@@ -33,17 +33,18 @@ class ViewletManagerBase(object):
     zope.interface.implements(interfaces.IViewletManager)
 
     def __init__(self, context, request, view):
+        self.__updated = False
+        self.__parent__ = view
         self.context = context
         self.request = request
-        self.view = view
 
 
     def __getitem__(self, name):
         """See zope.interface.common.mapping.IReadMapping"""
         # Find the viewlet
         viewlet = zope.component.queryMultiAdapter(
-            (self.context, self.request, self.view, self), interfaces.IViewlet,
-            name=name)
+            (self.context, self.request, self.__parent__, self),
+            interfaces.IViewlet, name=name)
 
         # If the viewlet was not found, then raise a lookup error
         if viewlet is None:
@@ -52,14 +53,13 @@ class ViewletManagerBase(object):
 
         # If the viewlet cannot be accessed, then raise an
         # unauthorized error
-        if not zope.security.canAccess(viewlet, '__call__'):
+        if not zope.security.canAccess(viewlet, 'render'):
             raise zope.security.interfaces.Unauthorized(
                 'You are not authorized to access the provider '
                 'called `%s`.' %name)
 
-        # Return the rendered viewlet.
+        # Return the viewlet.
         return viewlet
-
 
     def get(self, name, default=None):
         """See zope.interface.common.mapping.IReadMapping"""
@@ -76,7 +76,7 @@ class ViewletManagerBase(object):
         """
         # Only return viewlets accessible to the principal
         return [(name, viewlet) for name, viewlet in viewlets
-                if zope.security.canAccess(viewlet, '__call__')]
+                if zope.security.canAccess(viewlet, 'render')]
 
     def sort(self, viewlets):
         """Sort the viewlets.
@@ -86,24 +86,31 @@ class ViewletManagerBase(object):
         # By default, use the standard Python way of doing sorting.
         return sorted(viewlets, lambda x, y: cmp(x[1], y[1]))
 
-    def __call__(self, *args, **kw):
+    def update(self):
         """See zope.contentprovider.interfaces.IContentProvider"""
+        self.__updated = True
 
         # Find all content providers for the region
         viewlets = zope.component.getAdapters(
-            (self.context, self.request, self.view, self), interfaces.IViewlet)
+            (self.context, self.request, self.__parent__, self),
+            interfaces.IViewlet)
 
         viewlets = self.filter(viewlets)
         viewlets = self.sort(viewlets)
 
         # Just use the viewlets from now on
-        viewlets = [viewlet for name, viewlet in viewlets]
+        self.viewlets = [viewlet for name, viewlet in viewlets]
 
+        # Update all viewlets
+        [viewlet.update() for viewlet in self.viewlets]
+
+    def render(self):
+        """See zope.contentprovider.interfaces.IContentProvider"""
         # Now render the view
         if self.template:
-            return self.template(viewlets=viewlets)
+            return self.template(viewlets=self.viewlets)
         else:
-            return u'\n'.join([viewlet() for viewlet in viewlets])
+            return u'\n'.join([viewlet.render() for viewlet in self.viewlets])
 
 
 def ViewletManager(interface, template=None, bases=()):

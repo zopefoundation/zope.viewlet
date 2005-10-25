@@ -54,7 +54,8 @@ Now let's lookup the manager. This particular registration is pretty boring:
   True
   >>> manager.template is None
   True
-  >>> manager()
+  >>> manager.update()
+  >>> manager.render()
   u''
 
 However, this registration is not very useful, since we did specify a specific
@@ -88,7 +89,8 @@ Now we can register register a manager providing this interface:
   True
   >>> manager.template is None
   True
-  >>> manager()
+  >>> manager.update()
+  >>> manager.render()
   u''
 
 Next let's see what happens, if we specify a template for the viewlet manager:
@@ -125,7 +127,8 @@ Next let's see what happens, if we specify a template for the viewlet manager:
   True
   >>> manager.template
   <BoundPageTemplateFile of ...<ViewletManager providing ILeftColumn>  ...>>
-  >>> print manager().strip()
+  >>> manager.update()
+  >>> print manager.render().strip()
   <div class="column">
   </div>
 
@@ -163,7 +166,8 @@ weight attribute in the viewlet:
   True
   >>> manager.template
   <BoundPageTemplateFile of ...<ViewletManager providing ILeftColumn>  ...>>
-  >>> print manager().strip()
+  >>> manager.update()
+  >>> print manager.render().strip()
   <div class="column">
   </div>
 
@@ -214,12 +218,13 @@ If we look into the adapter registry, we will find the viewlet:
   >>> viewlet = zope.component.getMultiAdapter(
   ...     (content, request, view, manager), interfaces.IViewlet,
   ...     name='weather')
-  >>> viewlet().strip()
+  >>> viewlet.render().strip()
   u'<div>sunny</div>'
 
 The manager now also gives us the output of the one and only viewlet:
 
-  >>> print manager().strip()
+  >>> manager.update()
+  >>> print manager.render().strip()
   <div class="column">
     <div class="entry">
       <div>sunny</div>
@@ -299,7 +304,7 @@ be rendered upon calling the viewlet:
   >>> viewlet = zope.component.getMultiAdapter(
   ...     (content, request, view, manager), interfaces.IViewlet,
   ...     name='stock')
-  >>> viewlet()
+  >>> viewlet.render()
   u'SRC $5.19'
 
 A final feature the ``viewlet`` directive supports is the additional

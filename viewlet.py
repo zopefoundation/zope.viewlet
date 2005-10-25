@@ -21,7 +21,7 @@ import os
 import sys
 import zope.interface
 
-from zope.app.pagetemplate.simpleviewclass import simple
+from zope.app.pagetemplate import simpleviewclass
 from zope.app.pagetemplate.viewpagetemplatefile import ViewPageTemplateFile
 from zope.app.publisher.browser import BrowserView
 from zope.app.traversing import api
@@ -36,32 +36,38 @@ class ViewletBase(BrowserView):
 
     def __init__(self, context, request, view, manager):
         super(ViewletBase, self).__init__(context, request)
-        # TODO: We need to evaluate whether we really want to expose all those
-        # objects in the object. Theoretically, we only want `request` and
-        # `manager`.
+        self.__parent__ = view
         self.context = context
         self.request = request
-        self.view = view
         self.manager = manager
 
-    def __call__(self):
+    def update(self):
+        pass
+
+    def render(self):
         raise NotImplementedError(
-            '`__call__` method must be implemented by subclass.')
+            '`render` method must be implemented by subclass.')
 
 
 class SimpleAttributeViewlet(ViewletBase):
     """A viewlet that uses a specified method to produce its content."""
 
-    def __call__(self, *args, **kw):
+    def render(self, *args, **kw):
         # If a class doesn't provide it's own call, then get the attribute
         # given by the browser default.
 
         attr = self.__page_attribute__
-        if attr == '__call__':
-            raise AttributeError("__call__")
+        if attr == 'render':
+            raise AttributeError("render")
 
         meth = getattr(self, attr)
         return meth(*args, **kw)
+
+
+class simple(simpleviewclass.simple):
+    """Simple viewlet class supporting the ``render()`` method."""
+
+    render = simpleviewclass.simple.__call__
 
 
 def SimpleViewletClass(template, offering=None, bases=(), attributes=None,
@@ -99,7 +105,7 @@ class ResourceViewletBase(object):
                                 request=self.request)
         return resource()
 
-    def __call__(self, *args, **kw):
+    def render(self, *args, **kw):
         return self.index(*args, **kw)
 
 

@@ -64,7 +64,7 @@ def viewletManagerDirective(
         new_class = manager.ViewletManager(provides, bases=(class_, ))
 
     # Register some generic attributes with the security dictionary
-    for attr_name in ('browserDefault', '__call__', 'publishTraverse'):
+    for attr_name in ('browserDefault', 'update', 'render', 'publishTraverse'):
         required[attr_name] = permission
 
     # Register the ``provides`` interface and register fields in the security
@@ -100,7 +100,7 @@ def viewletDirective(
     _context, name, permission,
     for_=Interface, layer=IDefaultBrowserLayer, view=IBrowserView,
     manager=interfaces.IViewletManager, class_=None, template=None,
-    attribute='__call__', allowed_interface=None, allowed_attributes=None,
+    attribute='render', allowed_interface=None, allowed_attributes=None,
     **kwargs):
 
     # Security map dictionary
@@ -114,7 +114,7 @@ def viewletDirective(
         raise ConfigurationError("Must specify a class or template")
 
     # Make sure that all the non-default attribute specifications are correct.
-    if attribute != '__call__':
+    if attribute != 'render':
         if template:
             raise ConfigurationError(
                 "Attribute and template cannot be used together.")
@@ -134,7 +134,7 @@ def viewletDirective(
 
     # Make sure the has the right form, if specified.
     if class_:
-        if attribute != '__call__':
+        if attribute != 'render':
             if not hasattr(class_, attribute):
                 raise ConfigurationError(
                     "The provided class doesn't have the specified attribute "
@@ -172,7 +172,7 @@ def viewletDirective(
         _context, kwargs.keys(), permission, required)
     viewmeta._handle_allowed_attributes(
         _context,
-        (attribute, 'browserDefault', '__call__', 'publishTraverse'),
+        (attribute, 'browserDefault', 'update', 'render', 'publishTraverse'),
         permission, required)
 
     # Register the interfaces.

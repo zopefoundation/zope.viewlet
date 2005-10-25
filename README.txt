@@ -17,13 +17,13 @@ As mentioned above, besides inserting snippets of HTML at places, we more
 frequently want to define a region in our page and allow specialized content
 providers to be inserted based on configuration. Those specialized content
 providers are known viewlets and are only available inside viewlet managers,
-which are just a more complex example of a content provider.
+which are just a more complex example of content providers.
 
 Unfortunately, the Java world does not implement this layer separately. The
 viewlet manager is most similar to a Java "channel", but we decided against
 using this name, since it is very generic and not very meaningful. The viewlet
 has no Java counterpart, since Java does not implement content providers using
-a component archicture and thus does not register content providers
+a component architecture and thus does not register content providers
 specifically for viewlet managers, which I believe makes the Java
 implementation less usefull as a generic concept. In fact, the main design
 goal in the Java world is the implementation of reusable and sharable
@@ -67,7 +67,8 @@ Now we have to instantiate it:
 
 So initially nothing gets rendered:
 
-  >>> leftColumn()
+  >>> leftColumn.update()
+  >>> leftColumn.render()
   u''
 
 But now we register some viewlets for the manager
@@ -79,14 +80,17 @@ But now we register some viewlets for the manager
   ...     zope.interface.implements(interfaces.IViewlet)
   ...
   ...     def __init__(self, context, request, view, manager):
+  ...         self.__parent__ = view
+  ...
+  ...     def update(self):
   ...         pass
   ...
-  ...     def __call__(self):
+  ...     def render(self):
   ...         return u'<div class="box">It is sunny today!</div>'
 
   # Create a security checker for viewlets.
   >>> from zope.security.checker import NamesChecker, defineChecker
-  >>> viewletChecker = NamesChecker(('__call__', 'weight'))
+  >>> viewletChecker = NamesChecker(('update', 'render'))
   >>> defineChecker(WeatherBox, viewletChecker)
 
   >>> zope.component.provideAdapter(
@@ -99,9 +103,12 @@ But now we register some viewlets for the manager
   ...     zope.interface.implements(interfaces.IViewlet)
   ...
   ...     def __init__(self, context, request, view, manager):
+  ...         self.__parent__ = view
+  ...
+  ...     def update(self):
   ...         pass
   ...
-  ...     def __call__(self):
+  ...     def render(self):
   ...         return u'<div class="box">Patriots (23) : Steelers (7)</div>'
 
   >>> defineChecker(SportBox, viewletChecker)
@@ -114,7 +121,8 @@ But now we register some viewlets for the manager
 
 and thus the left column is filled:
 
-  >>> print leftColumn()
+  >>> leftColumn.update()
+  >>> print leftColumn.render()
   <div class="box">Patriots (23) : Steelers (7)</div>
   <div class="box">It is sunny today!</div>
 
@@ -129,7 +137,7 @@ viewlets are put together:
   >>> open(leftColTemplate, 'w').write('''
   ... <div class="left-column">
   ...   <tal:block repeat="viewlet options/viewlets"
-  ...              replace="structure viewlet" />
+  ...              replace="structure viewlet/render" />
   ... </div>
   ... ''')
 
@@ -142,7 +150,8 @@ As you can see, the viewlet manager provides a global ``options/viewlets``
 variable that is an iterable of all the avialable viewlets in the correct
 order:
 
-  >>> print leftColumn().strip()
+  >>> leftColumn.update()
+  >>> print leftColumn.render().strip()
   <div class="left-column">
     <div class="box">Patriots (23) : Steelers (7)</div>
     <div class="box">It is sunny today!</div>
@@ -200,7 +209,8 @@ Let's now create a new viewlet manager:
 
 So we get the weather box first and the sport box second:
 
-  >>> print leftColumn().strip()
+  >>> leftColumn.update()
+  >>> print leftColumn.render().strip()
   <div class="left-column">
     <div class="box">It is sunny today!</div>
     <div class="box">Patriots (23) : Steelers (7)</div>
@@ -212,7 +222,8 @@ Now let's change the order...
 
 and the order should switch as well:
 
-  >>> print leftColumn().strip()
+  >>> leftColumn.update()
+  >>> print leftColumn.render().strip()
   <div class="left-column">
     <div class="box">Patriots (23) : Steelers (7)</div>
     <div class="box">It is sunny today!</div>
@@ -221,7 +232,8 @@ and the order should switch as well:
 Of course, we also can remove a shown viewlet:
 
   >>> weather = shown.pop()
-  >>> print leftColumn().strip()
+  >>> leftColumn.update()
+  >>> print leftColumn.render().strip()
   <div class="left-column">
     <div class="box">Patriots (23) : Steelers (7)</div>
   </div>
@@ -242,17 +254,17 @@ The first class is a base class that simply defines the constructor:
   'context'
   >>> base.request
   'request'
-  >>> base.view
+  >>> base.__parent__
   'view'
   >>> base.manager
   'manager'
 
-But a default `__call__()` method implementation is not provided:
+But a default ``render()`` method implementation is not provided:
 
-  >>> base()
+  >>> base.render()
   Traceback (most recent call last):
   ...
-  NotImplementedError: `__call__` method must be implemented by subclass.
+  NotImplementedError: `render` method must be implemented by subclass.
 
 If you have already an existing class that produces the HTML content in some
 method, then the ``SimpleAttributeViewlet`` might be for you, since it can be
@@ -270,22 +282,22 @@ rendering.
   >>> foo = FooViewlet('context', 'request', 'view', 'manager')
   >>> foo.foo()
   'output'
-  >>> foo()
+  >>> foo.render()
   'output'
 
-If you specify `__call__` as the attribute an error is raised to prevent
+If you specify `render` as the attribute an error is raised to prevent
 infinite recursion:
 
-  >>> foo.__page_attribute__ = '__call__'
-  >>> foo()
+  >>> foo.__page_attribute__ = 'render'
+  >>> foo.render()
   Traceback (most recent call last):
   ...
-  AttributeError: __call__
+  AttributeError: render
 
 The same is true if the specified attribute does not exist:
 
   >>> foo.__page_attribute__ = 'bar'
-  >>> foo()
+  >>> foo.render()
   Traceback (most recent call last):
   ...
   AttributeError: 'FooViewlet' object has no attribute 'bar'
@@ -300,7 +312,7 @@ simply specifying a template only:
   >>> open(template, 'w').write('''<div>contents</div>''')
 
   >>> Demo = viewlet.SimpleViewletClass(template)
-  >>> print Demo(content, request, view, manager)()
+  >>> print Demo(content, request, view, manager).render()
   <div>contents</div>
 
 Now let's additionally specify a class that can provide additional features:
@@ -353,7 +365,7 @@ absolute URL for it:
   >>> ztapi.browserResource('resource.js', JSResource)
 
   >>> JSViewlet = viewlet.JavaScriptViewlet('resource.js')
-  >>> print JSViewlet(content, request, view, manager)().strip()
+  >>> print JSViewlet(content, request, view, manager).render().strip()
   <script type="text/javascript" src="/@@/resource.js">
   </script>
 
@@ -369,14 +381,14 @@ The same works for the CSS resource viewlet:
   >>> ztapi.browserResource('resource.css', CSSResource)
 
   >>> CSSViewlet = viewlet.CSSViewlet('resource.css')
-  >>> print CSSViewlet(content, request, view, manager)().strip()
+  >>> print CSSViewlet(content, request, view, manager).render().strip()
   <link type="text/css" rel="stylesheet"
         href="/@@/resource.css" media="all" />
 
 You can also change the media type and the rel attribute:
 
   >>> CSSViewlet = viewlet.CSSViewlet('resource.css', media='print', rel='css')
-  >>> print CSSViewlet(content, request, view, manager)().strip()
+  >>> print CSSViewlet(content, request, view, manager).render().strip()
   <link type="text/css" rel="css" href="/@@/resource.css"
         media="print" />
 
@@ -470,19 +482,20 @@ different item:
   ...     def __init__(self, context, request, view):
   ...         self.context = context
   ...         self.request = request
-  ...         self.view = view
+  ...         self.__parent__ = view
   ...
-  ...     def rows(self):
+  ...     def update(self):
   ...         rows = []
   ...         for name, value in self.context.items():
   ...             rows.append(
   ...                 [zope.component.getMultiAdapter(
-  ...                     (value, self.request, self.view, self),
+  ...                     (value, self.request, self.__parent__, self),
   ...                     interfaces.IViewlet, name=colname)
   ...                  for colname in shownColumns])
-  ...         return rows
+  ...             [entry.update() for entry in rows[-1]]
+  ...         self.rows = rows
   ...
-  ...     def __call__(self, *args, **kw):
+  ...     def render(self, *args, **kw):
   ...         return self.index(*args, **kw)
 
 Now we need a template to produce the contents table:
@@ -492,7 +505,7 @@ Now we need a template to produce the contents table:
   ... <table>
   ...   <tr tal:repeat="row view/rows">
   ...     <td tal:repeat="column row">
-  ...       <tal:block replace="structure column" />
+  ...       <tal:block replace="structure column/render" />
   ...     </td>
   ...   </tr>
   ... </table>
@@ -541,9 +554,13 @@ Now let's create a first viewlet for the manager...
   >>> class NameViewlet(object):
   ...
   ...     def __init__(self, context, request, view, manager):
+  ...         self.__parent__ = view
   ...         self.context = context
   ...
-  ...     def __call__(self):
+  ...     def update(self):
+  ...         pass
+  ...
+  ...     def render(self):
   ...         return self.context.__name__
 
 and register it:
@@ -611,9 +628,13 @@ us:
   >>> class SizeViewlet(object):
   ...
   ...     def __init__(self, context, request, view, manager):
+  ...         self.__parent__ = view
   ...         self.context = context
   ...
-  ...     def __call__(self):
+  ...     def update(self):
+  ...         pass
+  ...
+  ...     def render(self):
   ...         return size.interfaces.ISized(self.context).sizeForDisplay()
 
   >>> zope.component.provideAdapter(
@@ -750,9 +771,9 @@ viewlet manager much simpler:
   ...     def __init__(self, context, request, view):
   ...         self.context = context
   ...         self.request = request
-  ...         self.view = view
+  ...         self.__parent__ = view
   ...
-  ...     def rows(self):
+  ...     def update(self):
   ...         values = self.context.values()
   ...
   ...         if sortByColumn:
@@ -764,12 +785,13 @@ viewlet manager much simpler:
   ...         for value in values:
   ...             rows.append(
   ...                 [zope.component.getMultiAdapter(
-  ...                     (value, self.request, self.view, self),
+  ...                     (value, self.request, self.__parent__, self),
   ...                     interfaces.IViewlet, name=colname)
   ...                  for colname in shownColumns])
-  ...         return rows
+  ...             [entry.update() for entry in rows[-1]]
+  ...         self.rows = rows
   ...
-  ...     def __call__(self, *args, **kw):
+  ...     def render(self, *args, **kw):
   ...         return self.index(*args, **kw)
 
 As you can see, the concern of sorting is cleanly separated from generating
