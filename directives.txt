@@ -209,6 +209,7 @@ as seen below:
   ...       manager="zope.viewlet.directives.ILeftColumn"
   ...       template="%s"
   ...       permission="zope.Public"
+  ...       extra_string_attributes="can be specified"
   ...       />
   ... </configure>
   ... ''' % weatherTemplate, context=context)
@@ -220,6 +221,8 @@ If we look into the adapter registry, we will find the viewlet:
   ...     name='weather')
   >>> viewlet.render().strip()
   u'<div>sunny</div>'
+  >>> viewlet.extra_string_attributes
+  u'can be specified'
 
 The manager now also gives us the output of the one and only viewlet:
 

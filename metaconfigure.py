@@ -161,7 +161,8 @@ def viewletDirective(
 
     else:
         # Create a new class for the viewlet template alone.
-        new_class = viewlet.SimpleViewletClass(template, name=name)
+        new_class = viewlet.SimpleViewletClass(template, name=name,
+                                               attributes=kwargs)
 
     # Set up permission mapping for various accessible attributes
     viewmeta._handle_allowed_interface(
