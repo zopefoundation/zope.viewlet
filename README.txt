@@ -44,7 +44,7 @@ as viewlets. Every viewlet manager handles the viewlets registered for it:
 You can then create a viewlet manager using this interface now:
 
   >>> from zope.viewlet import manager
-  >>> LeftColumn = manager.ViewletManager(ILeftColumn)
+  >>> LeftColumn = manager.ViewletManager('left', ILeftColumn)
 
 Now we have to instantiate it:
 
@@ -141,7 +141,8 @@ viewlets are put together:
   ... </div>
   ... ''')
 
-  >>> LeftColumn = manager.ViewletManager(ILeftColumn, template=leftColTemplate)
+  >>> LeftColumn = manager.ViewletManager('left', ILeftColumn,
+  ...                                     template=leftColTemplate)
   >>> leftColumn = LeftColumn(content, request, view)
 
 TODO: Fix this silly thing; viewlets should be directly available.
@@ -204,7 +205,8 @@ The viewlet manager base class now uses this list:
 Let's now create a new viewlet manager:
 
   >>> LeftColumn = manager.ViewletManager(
-  ...     ILeftColumn, bases=(ListViewletManager,), template=leftColTemplate)
+  ...     'left', ILeftColumn, bases=(ListViewletManager,),
+  ...     template=leftColTemplate)
   >>> leftColumn = LeftColumn(content, request, view)
 
 So we get the weather box first and the sport box second:
