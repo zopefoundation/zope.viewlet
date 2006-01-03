@@ -144,7 +144,7 @@ viewlets are put together:
   >>> LeftColumn = manager.ViewletManager(ILeftColumn, template=leftColTemplate)
   >>> leftColumn = LeftColumn(content, request, view)
 
-XXX: Fix this silly thing; viewlets should be directly available.
+TODO: Fix this silly thing; viewlets should be directly available.
 
 As you can see, the viewlet manager provides a global ``options/viewlets``
 variable that is an iterable of all the avialable viewlets in the correct
