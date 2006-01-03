@@ -24,7 +24,6 @@ from zope.app.pagetemplate.viewpagetemplatefile import ViewPageTemplateFile
 
 from zope.viewlet import interfaces
 
-
 class ViewletManagerBase(object):
     """The Viewlet Manager Base
 
@@ -113,7 +112,7 @@ class ViewletManagerBase(object):
             return u'\n'.join([viewlet.render() for viewlet in self.viewlets])
 
 
-def ViewletManager(interface, template=None, bases=()):
+def ViewletManager(name, interface, template=None, bases=()):
 
     if template is not None:
         template = ViewPageTemplateFile(template)
@@ -128,6 +127,6 @@ def ViewletManager(interface, template=None, bases=()):
     ViewletManager = type(
         '<ViewletManager providing %s>' % interface.getName(),
         bases,
-        {'template': template})
+        {'template': template, '__name__' : name})
     zope.interface.classImplements(ViewletManager, interface)
     return ViewletManager

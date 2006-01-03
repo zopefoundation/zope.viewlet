@@ -58,10 +58,10 @@ def viewletManagerDirective(
 
         # Create a new class based on the template and class.
         new_class = manager.ViewletManager(
-            provides, template=template, bases=(class_, ))
+            name, provides, template=template, bases=(class_, ))
     else:
         # Create a new class based on the class.
-        new_class = manager.ViewletManager(provides, bases=(class_, ))
+        new_class = manager.ViewletManager(name, provides, bases=(class_, ))
 
     # Register some generic attributes with the security dictionary
     for attr_name in ('browserDefault', 'update', 'render', 'publishTraverse'):
@@ -142,7 +142,7 @@ def viewletDirective(
         if template:
             # Create a new class for the viewlet template and class.
             new_class = viewlet.SimpleViewletClass(
-                template, bases=(class_, ), attributes=kwargs)
+                template, bases=(class_, ), attributes=kwargs, name=name)
         else:
             if not hasattr(class_, 'browserDefault'):
                 cdict = {'browserDefault':
