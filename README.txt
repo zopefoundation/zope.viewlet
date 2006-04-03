@@ -417,7 +417,7 @@ generic contents view for files. The step is to create a file component:
 Since we want to also provide the size of a file, here a simple implementation
 of the ``ISized`` interface:
 
-  >>> from zope.app import size
+  >>> from zope import size
   >>> class FileSized(object):
   ...     zope.interface.implements(size.interfaces.ISized)
   ...     zope.component.adapts(IFile)
