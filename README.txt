@@ -56,7 +56,7 @@ Now we have to instantiate it:
   >>> from zope.publisher.browser import TestRequest
   >>> request = TestRequest()
 
-  >>> from zope.app.publisher.interfaces.browser import IBrowserView
+  >>> from zope.publisher.interfaces.browser import IBrowserView
   >>> class View(object):
   ...     zope.interface.implements(IBrowserView)
   ...     def __init__(self, context, request):
