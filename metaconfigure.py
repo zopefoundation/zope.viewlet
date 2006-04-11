@@ -24,11 +24,10 @@ from zope.configuration.exceptions import ConfigurationError
 from zope.interface import Interface, classImplements
 from zope.publisher.interfaces.browser import IDefaultBrowserLayer
 from zope.publisher.interfaces.browser import IBrowserView
-
-from zope.app.component import metaconfigure
-from zope.app.publisher.browser import viewmeta
-
+from zope.component import zcml
 from zope.viewlet import viewlet, manager, interfaces
+
+from zope.app.publisher.browser import viewmeta
 
 def viewletManagerDirective(
     _context, name, permission,
@@ -80,7 +79,7 @@ def viewletManagerDirective(
 
     # Register interfaces
     viewmeta._handle_for(_context, for_)
-    metaconfigure.interface(_context, view)
+    zcml.interface(_context, view)
 
     # Create a checker for the viewlet manager
     checker.defineChecker(new_class, checker.Checker(required))
@@ -88,7 +87,7 @@ def viewletManagerDirective(
     # register a viewlet manager
     _context.action(
         discriminator = ('viewletManager', for_, layer, view, name),
-        callable = metaconfigure.handler,
+        callable = zcml.handler,
         args = ('provideAdapter',
                 (for_, layer, view), provides, name,
                  new_class, _context.info),)
@@ -176,7 +175,7 @@ def viewletDirective(
 
     # Register the interfaces.
     viewmeta._handle_for(_context, for_)
-    metaconfigure.interface(_context, view)
+    zcml.interface(_context, view)
 
     # Create the security checker for the new class
     checker.defineChecker(new_class, checker.Checker(required))
@@ -184,7 +183,7 @@ def viewletDirective(
     # register viewlet
     _context.action(
         discriminator = ('viewlet', for_, layer, view, manager, name),
-        callable = metaconfigure.handler,
+        callable = zcml.handler,
         args = ('provideAdapter',
                 (for_, layer, view, manager), interfaces.IViewlet,
                  name, new_class, _context.info),)
