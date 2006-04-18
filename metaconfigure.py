@@ -88,9 +88,9 @@ def viewletManagerDirective(
     _context.action(
         discriminator = ('viewletManager', for_, layer, view, name),
         callable = zcml.handler,
-        args = ('provideAdapter',
-                (for_, layer, view), provides, name,
-                 new_class, _context.info),)
+        args = ('registerAdapter',
+                new_class, (for_, layer, view), provides, name,
+                 _context.info),)
 
 
 def viewletDirective(
@@ -184,6 +184,6 @@ def viewletDirective(
     _context.action(
         discriminator = ('viewlet', for_, layer, view, manager, name),
         callable = zcml.handler,
-        args = ('provideAdapter',
-                (for_, layer, view, manager), interfaces.IViewlet,
-                 name, new_class, _context.info),)
+        args = ('registerAdapter',
+                new_class, (for_, layer, view, manager), interfaces.IViewlet,
+                 name, _context.info),)
