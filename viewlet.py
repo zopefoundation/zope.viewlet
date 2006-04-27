@@ -20,14 +20,12 @@ __docformat__ = 'restructuredtext'
 import os
 import sys
 import zope.interface
+from zope.traversing import api
+from zope.publisher.browser import BrowserView
+from zope.viewlet import interfaces
 
 from zope.app.pagetemplate import simpleviewclass
 from zope.app.pagetemplate.viewpagetemplatefile import ViewPageTemplateFile
-from zope.app.publisher.browser import BrowserView
-from zope.app.traversing import api
-
-from zope.viewlet import interfaces
-
 
 class ViewletBase(BrowserView):
     """Viewlet adapter class used in meta directive as a mixin class."""

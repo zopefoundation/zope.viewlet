@@ -19,10 +19,10 @@ __docformat__ = 'restructuredtext'
 
 import zope.interface
 import zope.schema
-from zope.app.i18n import ZopeMessageFactory as _
-
 from zope.contentprovider.interfaces import IContentProvider
 from zope.interface.common.mapping import IReadMapping
+from zope.i18nmessageid import MessageFactory
+_ = MessageFactory('zope')
 
 class IViewlet(IContentProvider):
     """A content provider that is managed by another content provider, known

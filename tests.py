@@ -32,8 +32,8 @@ def setUp(test):
     setup.placefulSetUp()
 
     # resource namespace setup
-    from zope.app.traversing.interfaces import ITraversable
-    from zope.app.traversing.namespace import resource
+    from zope.traversing.interfaces import ITraversable
+    from zope.traversing.namespace import resource
     ztapi.provideAdapter(None, ITraversable, resource, name="resource")
     ztapi.provideView(None, None, ITraversable, "resource", resource)
 

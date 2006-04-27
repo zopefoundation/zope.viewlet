@@ -19,11 +19,11 @@ __docformat__ = 'restructuredtext'
 
 import zope.configuration.fields
 import zope.schema
+from zope.publisher.interfaces import browser
+from zope.i18nmessageid import MessageFactory
+_ = MessageFactory('zope')
 
-from zope.app.i18n import ZopeMessageFactory as _
 from zope.app.publisher.browser import metadirectives
-from zope.app.publisher.interfaces import browser
-
 from zope.viewlet import interfaces
 
 

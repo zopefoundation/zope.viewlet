@@ -37,7 +37,7 @@ objects:
   >>> from zope.publisher.browser import TestRequest
   >>> request = TestRequest()
 
-  >>> from zope.app.publisher.browser import BrowserView
+  >>> from zope.publisher.browser import BrowserView
   >>> view = BrowserView(content, request)
 
 Now let's lookup the manager. This particular registration is pretty boring:

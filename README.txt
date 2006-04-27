@@ -56,7 +56,7 @@ Now we have to instantiate it:
   >>> from zope.publisher.browser import TestRequest
   >>> request = TestRequest()
 
-  >>> from zope.app.publisher.interfaces.browser import IBrowserView
+  >>> from zope.publisher.interfaces.browser import IBrowserView
   >>> class View(object):
   ...     zope.interface.implements(IBrowserView)
   ...     def __init__(self, context, request):
@@ -170,7 +170,7 @@ If the viewlet is not found, then the expected behavior is provided:
   >>> leftColumn['stock']
   Traceback (most recent call last):
   ...
-  ComponentLookupError: 'No provider with name `stock` found.'
+  ComponentLookupError: No provider with name `stock` found.
 
   >>> leftColumn.get('stock') is None
   True
@@ -417,7 +417,7 @@ generic contents view for files. The step is to create a file component:
 Since we want to also provide the size of a file, here a simple implementation
 of the ``ISized`` interface:
 
-  >>> from zope.app import size
+  >>> from zope import size
   >>> class FileSized(object):
   ...     zope.interface.implements(size.interfaces.ISized)
   ...     zope.component.adapts(IFile)
