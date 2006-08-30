@@ -30,6 +30,7 @@ class ViewletManagerBase(object):
     A generic manager class which can be instantiated
     """
     zope.interface.implements(interfaces.IViewletManager)
+    template = None
 
     def __init__(self, context, request, view):
         self.__updated = False
@@ -114,8 +115,9 @@ class ViewletManagerBase(object):
 
 def ViewletManager(name, interface, template=None, bases=()):
 
+    attrDict = {'__name__' : name}
     if template is not None:
-        template = ViewPageTemplateFile(template)
+        attrDict['template'] = ViewPageTemplateFile(template)
 
     if ViewletManagerBase not in bases:
         # Make sure that we do not get a default viewlet manager mixin, if the
@@ -125,8 +127,6 @@ def ViewletManager(name, interface, template=None, bases=()):
             bases = bases + (ViewletManagerBase,)
 
     ViewletManager = type(
-        '<ViewletManager providing %s>' % interface.getName(),
-        bases,
-        {'template': template, '__name__' : name})
+        '<ViewletManager providing %s>' % interface.getName(), bases, attrDict)
     zope.interface.classImplements(ViewletManager, interface)
     return ViewletManager
