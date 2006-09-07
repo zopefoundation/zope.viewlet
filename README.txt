@@ -363,8 +363,10 @@ absolute URL for it:
   ...     def __call__(self):
   ...         return '/@@/resource.js'
 
-  >>> from zope.app.testing import ztapi
-  >>> ztapi.browserResource('resource.js', JSResource)
+  >>> zope.component.provideAdapter(
+  ...     JSResource,
+  ...     (IDefaultBrowserLayer,),
+  ...     zope.interface.Interface, name='resource.js')
 
   >>> JSViewlet = viewlet.JavaScriptViewlet('resource.js')
   >>> print JSViewlet(content, request, view, manager).render().strip()
@@ -380,7 +382,10 @@ The same works for the CSS resource viewlet:
   ...     def __call__(self):
   ...         return '/@@/resource.css'
 
-  >>> ztapi.browserResource('resource.css', CSSResource)
+  >>> zope.component.provideAdapter(
+  ...     CSSResource,
+  ...     (IDefaultBrowserLayer,),
+  ...     zope.interface.Interface, name='resource.css')
 
   >>> CSSViewlet = viewlet.CSSViewlet('resource.css')
   >>> print CSSViewlet(content, request, view, manager).render().strip()

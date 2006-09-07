@@ -18,11 +18,12 @@ $Id$
 __docformat__ = 'restructuredtext'
 
 import unittest
+import zope.component
 import zope.interface
 import zope.security
 from zope.testing import doctest
 from zope.testing.doctestunit import DocTestSuite, DocFileSuite
-from zope.app.testing import setup, ztapi
+from zope.app.testing import setup
 
 class TestParticipation(object):
     principal = 'foobar'
@@ -34,8 +35,10 @@ def setUp(test):
     # resource namespace setup
     from zope.traversing.interfaces import ITraversable
     from zope.traversing.namespace import resource
-    ztapi.provideAdapter(None, ITraversable, resource, name="resource")
-    ztapi.provideView(None, None, ITraversable, "resource", resource)
+    zope.component.provideAdapter(
+        resource, (None,), ITraversable, name = "resource")
+    zope.component.provideAdapter(
+        resource, (None, None), ITraversable, name = "resource")
 
     from zope.app.pagetemplate import metaconfigure
     from zope.contentprovider import tales
