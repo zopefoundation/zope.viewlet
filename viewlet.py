@@ -13,7 +13,7 @@
 ##############################################################################
 """Viewlet implementation
 
-$Id: metaconfigure.py 38437 2005-09-10 01:59:07Z rogerineichen $
+$Id$
 """
 __docformat__ = 'restructuredtext'
 
@@ -144,3 +144,79 @@ def CSSViewlet(path, media="all", rel="stylesheet"):
 
     return klass
 
+
+class ResourceBundleViewletBase(object):
+    """A simple viewlet for inserting references to different resources.
+
+    This is an abstract class that is expected to be used as a base only.
+    """
+    _paths = None
+
+    def getResources(self):
+        resources = []
+        append = resources.append
+        for path in self._paths:
+            append(api.traverse(self.context, '++resource++' + path,
+                request=self.request))
+        return resources
+
+    def render(self, *args, **kw):
+        return self.index(*args, **kw)
+
+
+def JavaScriptBundleViewlet(paths):
+    """Create a viewlet that can simply insert javascript links."""
+    src = os.path.join(os.path.dirname(__file__), 
+        'javascript_bundle_viewlet.pt')
+
+    klass = type('JavaScriptBundleViewlet',
+                 (ResourceBundleViewletBase, ViewletBase),
+                  {'index': ViewPageTemplateFile(src),
+                   '_paths': paths})
+
+    return klass
+
+
+class CSSResourceBundleViewletBase(object):
+    """A simple viewlet for inserting css references to different resources.
+
+    There is a tuple or list of dict used for the different resource 
+    descriptions. The list of dict uses the following format:
+    
+    ({path:'the path', media:'all', rel:'stylesheet'},...)
+    
+    The default values for media is ``all`` and the default value for rel is
+    ``stylesheet``. The path must be set there is no default value for the 
+    path attribute.
+    
+    This is an abstract class that is expected to be used as a base only.
+    """
+    _items = None
+
+    def getResources(self):
+        resources = []
+        append = resources.append
+        for item in self._items:
+            info = {}
+            info['url'] = api.traverse(self.context, 
+                '++resource++' + item.get('path'), request=self.request)
+            info['media'] = item.get('media', 'all')
+            info['rel'] = item.get('rel', 'stylesheet')
+            append(info)
+        return resources
+
+    def render(self, *args, **kw):
+        return self.index(*args, **kw)
+
+
+def CSSBundleViewlet(items):
+    """Create a viewlet that can simply insert css links."""
+    src = os.path.join(os.path.dirname(__file__), 
+        'css_bundle_viewlet.pt')
+
+    klass = type('CSSBundleViewlet',
+                 (CSSResourceBundleViewletBase, ViewletBase),
+                  {'index': ViewPageTemplateFile(src),
+                   '_items': items})
+
+    return klass

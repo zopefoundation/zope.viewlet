@@ -373,6 +373,31 @@ absolute URL for it:
   <script type="text/javascript" src="/@@/resource.js">
   </script>
 
+
+There is also a javascript viewlet base class which knows how to render more 
+then one javascript resource file:
+
+  >>> class JSSecondResource(object):
+  ...     def __init__(self, request):
+  ...         self.request = request
+  ...
+  ...     def __call__(self):
+  ...         return '/@@/second-resource.js'
+
+  >>> zope.component.provideAdapter(
+  ...     JSSecondResource,
+  ...     (IDefaultBrowserLayer,),
+  ...     zope.interface.Interface, name='second-resource.js')
+
+  >>> JSBundleViewlet = viewlet.JavaScriptBundleViewlet(('resource.js',
+  ...                                                    'second-resource.js'))
+  >>> print JSBundleViewlet(content, request, view, manager).render().strip()
+  <script type="text/javascript"
+          src="/@@/resource.js"> </script>
+  <script type="text/javascript"
+          src="/@@/second-resource.js"> </script>
+
+
 The same works for the CSS resource viewlet:
 
   >>> class CSSResource(object):
@@ -398,6 +423,30 @@ You can also change the media type and the rel attribute:
   >>> print CSSViewlet(content, request, view, manager).render().strip()
   <link type="text/css" rel="css" href="/@@/resource.css"
         media="print" />
+
+There is also a bundle viewlet for CSS links:
+
+  >>> class CSSPrintResource(object):
+  ...     def __init__(self, request):
+  ...         self.request = request
+  ...
+  ...     def __call__(self):
+  ...         return '/@@/print-resource.css'
+
+  >>> zope.component.provideAdapter(
+  ...     CSSPrintResource,
+  ...     (IDefaultBrowserLayer,),
+  ...     zope.interface.Interface, name='print-resource.css')
+
+  >>> items = []
+  >>> items.append({'path':'resource.css', 'rel':'stylesheet', 'media':'all'})
+  >>> items.append({'path':'print-resource.css', 'media':'print'})
+  >>> CSSBundleViewlet = viewlet.CSSBundleViewlet(items)
+  >>> print CSSBundleViewlet(content, request, view, manager).render().strip()
+  <link type="text/css" rel="stylesheet"
+        href="/@@/resource.css" media="all" />
+  <link type="text/css" rel="stylesheet"
+        href="/@@/print-resource.css" media="print" />
 
 
 A Complex Example
