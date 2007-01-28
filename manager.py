@@ -23,6 +23,7 @@ import zope.security
 from zope.app.pagetemplate.viewpagetemplatefile import ViewPageTemplateFile
 
 from zope.viewlet import interfaces
+from zope.location.interfaces import ILocation
 
 class ViewletManagerBase(object):
     """The Viewlet Manager Base
@@ -97,10 +98,15 @@ class ViewletManagerBase(object):
 
         viewlets = self.filter(viewlets)
         viewlets = self.sort(viewlets)
-
         # Just use the viewlets from now on
-        self.viewlets = [viewlet for name, viewlet in viewlets]
+        self.viewlets=[]
+        for name, viewlet in viewlets:
+            if ILocation.providedBy(viewlet):
+                viewlet.__name__ = name
+            self.viewlets.append(viewlet)
+        self._updateViewlets()
 
+    def _updateViewlets(self):
         # Update all viewlets
         [viewlet.update() for viewlet in self.viewlets]
 

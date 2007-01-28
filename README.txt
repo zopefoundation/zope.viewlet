@@ -99,8 +99,10 @@ But now we register some viewlets for the manager
   ...     IBrowserView, ILeftColumn),
   ...     interfaces.IViewlet, name='weather')
 
+  >>> from zope.location.interfaces import ILocation
   >>> class SportBox(object):
-  ...     zope.interface.implements(interfaces.IViewlet)
+  ...     zope.interface.implements(interfaces.IViewlet,
+  ...         ILocation)
   ...
   ...     def __init__(self, context, request, view, manager):
   ...         self.__parent__ = view
@@ -157,6 +159,13 @@ order:
     <div class="box">Patriots (23) : Steelers (7)</div>
     <div class="box">It is sunny today!</div>
   </div>
+
+If a viewlet provides ILocation the ``__name__`` attribute of the
+viewlet is set to the name under which the viewlet is registered.
+
+  >>> [getattr(viewlet, '__name__', None) for viewlet in leftColumn.viewlets]
+  [u'sport', None]
+
 
 You can also lookup the viewlets directly for management purposes:
 
