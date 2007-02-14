@@ -18,13 +18,10 @@ $Id$
 
 import os
 
-try:
-    from setuptools import setup, Extension
-except ImportError, e:
-    from distutils.core import setup, Extension
+from setuptools import setup, find_packages
 
 setup(name='zope.viewlet',
-      version='3.4-dev',
+      version='3.4dev',
       url='http://svn.zope.org/zope.viewlet',
       license='ZPL 2.1',
       description='Zope viewlet',
@@ -33,9 +30,8 @@ setup(name='zope.viewlet',
       long_description="Viewlets provide a generic framework for"
                        "building pluggable user interfaces.",
 
-      packages=['zope',
-                'zope.viewlet'],
-      package_dir = {'': 'src'},
+      packages=find_packages('src'),
+	  package_dir = {'': 'src'},
 
       namespace_packages=['zope',],
       tests_require = ['zope.testing'],
