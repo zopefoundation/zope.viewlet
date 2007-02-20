@@ -37,7 +37,7 @@ setup(name='zope.viewlet',
       tests_require = ['zope.testing'],
       install_requires=['zope.interface',
                         'zope.component',
-                        'zope.i18nmessageid'
+                        'zope.i18nmessageid',
                         'zope.configuration',
                         'zope.contentprovider',
                         'zope.publisher',
