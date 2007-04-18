@@ -18,9 +18,7 @@ $Id$
 __docformat__ = 'restructuredtext'
 
 import zope.interface
-import zope.schema
 from zope.contentprovider.interfaces import IContentProvider
-from zope.interface.common.mapping import IReadMapping
 from zope.i18nmessageid import MessageFactory
 _ = MessageFactory('zope')
 
