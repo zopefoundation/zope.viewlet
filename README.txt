@@ -121,9 +121,20 @@ But now we register some viewlets for the manager
   ...      IBrowserView, ILeftColumn),
   ...     interfaces.IViewlet, name='sport')
 
-and thus the left column is filled:
+and thus the left column is filled. Note that also events get fired
+before viewlets are updated. We register a simple handler to
+demonstrate this behaviour.
 
+  >>> from zope.contentprovider.interfaces import IBeforeUpdateEvent
+  >>> events = []
+  >>> def handler(ev):
+  ...     events.append(ev)
+  >>> zope.component.provideHandler(handler, (IBeforeUpdateEvent,))
   >>> leftColumn.update()
+  >>> [(ev, ev.object.__class__.__name__) for ev in events]
+  [(<zope.contentprovider.interfaces.BeforeUpdateEvent...>, 'SportBox'),
+   (<zope.contentprovider.interfaces.BeforeUpdateEvent...>, 'WeatherBox')]
+  
   >>> print leftColumn.render()
   <div class="box">Patriots (23) : Steelers (7)</div>
   <div class="box">It is sunny today!</div>

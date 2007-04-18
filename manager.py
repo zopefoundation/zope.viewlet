@@ -20,10 +20,12 @@ __docformat__ = 'restructuredtext'
 import zope.component
 import zope.interface
 import zope.security
+import zope.event
 from zope.app.pagetemplate.viewpagetemplatefile import ViewPageTemplateFile
 
 from zope.viewlet import interfaces
 from zope.location.interfaces import ILocation
+from zope.contentprovider.interfaces import BeforeUpdateEvent
 
 class ViewletManagerBase(object):
     """The Viewlet Manager Base
@@ -107,8 +109,10 @@ class ViewletManagerBase(object):
         self._updateViewlets()
 
     def _updateViewlets(self):
-        # Update all viewlets
-        [viewlet.update() for viewlet in self.viewlets]
+        """Calls update on all viewlets and fires events"""
+        for viewlet in self.viewlets:
+            zope.event.notify(BeforeUpdateEvent(viewlet))
+            viewlet.update()
 
     def render(self):
         """See zope.contentprovider.interfaces.IContentProvider"""
