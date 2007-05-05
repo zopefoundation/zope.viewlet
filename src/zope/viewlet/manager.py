@@ -111,7 +111,7 @@ class ViewletManagerBase(object):
     def _updateViewlets(self):
         """Calls update on all viewlets and fires events"""
         for viewlet in self.viewlets:
-            zope.event.notify(BeforeUpdateEvent(viewlet))
+            zope.event.notify(BeforeUpdateEvent(viewlet, self.request))
             viewlet.update()
 
     def render(self):
