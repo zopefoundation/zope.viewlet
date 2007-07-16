@@ -16,7 +16,7 @@
         />
 
     <meta:directive
-        name="resourceViewletManager"
+        name="resourceViewlet"
         schema=".metadirectives.IResourceViewletDirective"
         handler=".metaconfigure.resourceViewletDirective"
         />
