@@ -16,8 +16,8 @@ Design Notes
 As mentioned above, besides inserting snippets of HTML at places, we more
 frequently want to define a region in our page and allow specialized content
 providers to be inserted based on configuration. Those specialized content
-providers are known viewlets and are only available inside viewlet managers,
-which are just a more complex example of content providers.
+providers are known as viewlets and are only available inside viewlet
+managers, which are just a more complex example of content providers.
 
 Unfortunately, the Java world does not implement this layer separately. The
 viewlet manager is most similar to a Java "channel", but we decided against
@@ -25,7 +25,7 @@ using this name, since it is very generic and not very meaningful. The viewlet
 has no Java counterpart, since Java does not implement content providers using
 a component architecture and thus does not register content providers
 specifically for viewlet managers, which I believe makes the Java
-implementation less usefull as a generic concept. In fact, the main design
+implementation less useful as a generic concept. In fact, the main design
 goal in the Java world is the implementation of reusable and sharable
 portlets. The scope for Zope 3 is larger, since we want to provide a generic
 framework for building pluggable user interfaces.
