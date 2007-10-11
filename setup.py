@@ -29,6 +29,13 @@ setup(name='zope.viewlet',
       long_description=(
           read('README.txt')
           + '\n\n' +
+          'Detailed Documentation\n' +
+          '**********************\n\n'
+          + '\n\n' +
+          read('src', 'zope', 'viewlet', 'README.txt')
+          + '\n\n' +
+          read('src', 'zope', 'viewlet', 'directives.txt')
+          + '\n\n' +
           read('CHANGES.txt')
           ),
       keywords = "zope3 web html ui viewlet pattern",
@@ -52,21 +59,22 @@ setup(name='zope.viewlet',
                 'zope.testing',
                 'zope.app.securitypolicy',
                 'zope.app.zcmlfiles']),
-      install_requires=['setuptools',
-                        'zope.app.pagetemplate',
-                        'zope.app.publisher',
-                        'zope.component',
-                        'zope.configuration',
-                        'zope.contentprovider',
-                        'zope.event',
-                        'zope.i18nmessageid',
-                        'zope.interface',
-                        'zope.location',
-                        'zope.publisher',
-                        'zope.schema',
-                        'zope.security',
-                        'zope.traversing',
-                        ],
+      install_requires=[
+          'setuptools',
+          'zope.app.pagetemplate',
+          'zope.app.publisher',
+          'zope.component',
+          'zope.configuration',
+          'zope.contentprovider',
+          'zope.event',
+          'zope.i18nmessageid',
+          'zope.interface',
+          'zope.location',
+          'zope.publisher',
+          'zope.schema',
+          'zope.security',
+          'zope.traversing',
+          ],
       include_package_data = True,
       zip_safe = False,
       )
