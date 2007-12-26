@@ -169,7 +169,7 @@ class WeightOrderedViewletManager(ViewletManagerBase):
             return u'\n'.join([viewlet.render() for viewlet in self.viewlets])
 
 
-def isAvilable(viewlet):
+def isAvailable(viewlet):
     try:
         return zope.security.canAccess(viewlet, 'render') and viewlet.available
     except AttributeError:
@@ -185,5 +185,5 @@ class ConditionalViewletManager(WeightOrderedViewletManager):
         ``viewlets`` is a list of tuples of the form (name, viewlet).
         """
         return [(name, viewlet) for name, viewlet in viewlets
-                if isAvilable(viewlet)]
+                if isAvailable(viewlet)]
 
