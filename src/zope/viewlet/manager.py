@@ -41,7 +41,6 @@ class ViewletManagerBase(object):
         self.context = context
         self.request = request
 
-
     def __getitem__(self, name):
         """See zope.interface.common.mapping.IReadMapping"""
         # Find the viewlet
@@ -71,6 +70,10 @@ class ViewletManagerBase(object):
         except (zope.component.interfaces.ComponentLookupError,
                 zope.security.interfaces.Unauthorized):
             return default
+
+    def __contains__(self, name):
+        """See zope.interface.common.mapping.IReadMapping"""
+        return bool(self.get(name, False))
 
     def filter(self, viewlets):
         """Sort out all content providers
@@ -140,3 +143,47 @@ def ViewletManager(name, interface, template=None, bases=()):
         '<ViewletManager providing %s>' % interface.getName(), bases, attrDict)
     zope.interface.classImplements(ViewletManager, interface)
     return ViewletManager
+
+
+def getWeight((name, viewlet)):
+    try:
+        return int(viewlet.weight)
+    except AttributeError:
+        return 0
+
+
+class WeightOrderedViewletManager(ViewletManagerBase):
+    """Weight ordered viewlet managers."""
+
+    def sort(self, viewlets):
+        return sorted(viewlets, key=getWeight)
+
+    def render(self):
+        """See zope.contentprovider.interfaces.IContentProvider"""
+        # do not render a manager template if no viewlets are avaiable
+        if not self.viewlets:
+            return u''
+        elif self.template:
+            return self.template(viewlets=self.viewlets)
+        else:
+            return u'\n'.join([viewlet.render() for viewlet in self.viewlets])
+
+
+def isAvilable(viewlet):
+    try:
+        return zope.security.canAccess(viewlet, 'render') and viewlet.available
+    except AttributeError:
+        return True
+
+
+class ConditionalViewletManager(WeightOrderedViewletManager):
+    """Conditional weight ordered viewlet managers."""
+
+    def filter(self, viewlets):
+        """Sort out all viewlets which are explicit not available
+
+        ``viewlets`` is a list of tuples of the form (name, viewlet).
+        """
+        return [(name, viewlet) for name, viewlet in viewlets
+                if isAvilable(viewlet)]
+

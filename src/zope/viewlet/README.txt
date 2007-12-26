@@ -185,6 +185,15 @@ You can also lookup the viewlets directly for management purposes:
   >>> leftColumn.get('weather')
   <WeatherBox ...>
 
+The viewlet manager also provides the __contains__ method defined in 
+IReadMapping:
+
+  >>> 'weather' in leftColumn
+  True
+
+  >>> 'unknown' in leftColumn
+  False
+
 If the viewlet is not found, then the expected behavior is provided:
 
   >>> leftColumn['stock']
@@ -261,13 +270,218 @@ Of course, we also can remove a shown viewlet:
   </div>
 
 
+WeightOrderedViewletManager
+---------------------------
+
+The weight ordered viewlet manager offers ordering viewlets by a additional
+weight argument. Viewlets which doesn't provide a weight attribute will get 
+a weight of 0 (zero).
+
+Let's define a new column:
+
+  >>> class IWeightedColumn(interfaces.IViewletManager):
+  ...     """Column with weighted viewlet manager."""
+
+First register a template for the weight ordered viewlet manager:
+
+  >>> weightedColTemplate = os.path.join(temp_dir, 'weightedColTemplate.pt')
+  >>> open(weightedColTemplate, 'w').write('''
+  ... <div class="weighted-column">
+  ...   <tal:block repeat="viewlet options/viewlets"
+  ...              replace="structure viewlet/render" />
+  ... </div>
+  ... ''')
+
+And create a new weight ordered viewlet manager:
+
+  >>> from zope.viewlet.manager import WeightOrderedViewletManager
+  >>> WeightedColumn = manager.ViewletManager(
+  ...     'left', IWeightedColumn, bases=(WeightOrderedViewletManager,),
+  ...     template=weightedColTemplate)
+  >>> weightedColumn = WeightedColumn(content, request, view)
+
+Let's create some viewlets:
+
+  >>> from zope.viewlet import viewlet
+  >>> class FirstViewlet(viewlet.ViewletBase):
+  ... 
+  ...     weight = 1
+  ... 
+  ...     def render(self):
+  ...         return u'<div>first</div>'
+
+  >>> class SecondViewlet(viewlet.ViewletBase):
+  ... 
+  ...     weight = 2
+  ... 
+  ...     def render(self):
+  ...         return u'<div>second</div>'
+
+  >>> class ThirdViewlet(viewlet.ViewletBase):
+  ... 
+  ...     weight = 3
+  ... 
+  ...     def render(self):
+  ...         return u'<div>third</div>'
+
+  >>> class UnWeightedViewlet(viewlet.ViewletBase):
+  ... 
+  ...     def render(self):
+  ...         return u'<div>unweighted</div>'
+
+  >>> defineChecker(FirstViewlet, viewletChecker)
+  >>> defineChecker(SecondViewlet, viewletChecker)
+  >>> defineChecker(ThirdViewlet, viewletChecker)
+  >>> defineChecker(UnWeightedViewlet, viewletChecker)
+
+  >>> zope.component.provideAdapter(
+  ...     ThirdViewlet,
+  ...     (zope.interface.Interface, IDefaultBrowserLayer,
+  ...      IBrowserView, IWeightedColumn),
+  ...     interfaces.IViewlet, name='third')
+
+  >>> zope.component.provideAdapter(
+  ...     FirstViewlet,
+  ...     (zope.interface.Interface, IDefaultBrowserLayer,
+  ...      IBrowserView, IWeightedColumn),
+  ...     interfaces.IViewlet, name='first')
+
+  >>> zope.component.provideAdapter(
+  ...     SecondViewlet,
+  ...     (zope.interface.Interface, IDefaultBrowserLayer,
+  ...      IBrowserView, IWeightedColumn),
+  ...     interfaces.IViewlet, name='second')
+
+  >>> zope.component.provideAdapter(
+  ...     UnWeightedViewlet,
+  ...     (zope.interface.Interface, IDefaultBrowserLayer,
+  ...      IBrowserView, IWeightedColumn),
+  ...     interfaces.IViewlet, name='unweighted')
+
+And check the order:
+
+  >>> weightedColumn.update()
+  >>> print weightedColumn.render().strip()
+  <div class="weighted-column">
+    <div>unweighted</div>
+    <div>first</div>
+    <div>second</div>
+    <div>third</div>
+  </div>
+
+
+WeightOrderedViewletManager
+---------------------------
+
+The conditional ordered viewlet manager offers ordering viewlets by a 
+additional weight argument and filters by the available attribute if a 
+supported by the viewlet. Viewlets which doesn't provide a available attribute
+will not get skiped. The default weight value for vielwets which doesn't 
+provide a weight attribute is o (zero). 
+
+Let's define a new column:
+
+  >>> class IConditionalColumn(interfaces.IViewletManager):
+  ...     """Column with weighted viewlet manager."""
+
+First register a template for the weight ordered viewlet manager:
+
+  >>> conditionalColTemplate = os.path.join(temp_dir,
+  ...     'conditionalColTemplate.pt')
+  >>> open(conditionalColTemplate, 'w').write('''
+  ... <div class="conditional-column">
+  ...   <tal:block repeat="viewlet options/viewlets"
+  ...              replace="structure viewlet/render" />
+  ... </div>
+  ... ''')
+
+And create a new conditional viewlet manager:
+
+  >>> from zope.viewlet.manager import ConditionalViewletManager
+  >>> ConditionalColumn = manager.ViewletManager(
+  ...     'left', IConditionalColumn, bases=(ConditionalViewletManager,),
+  ...     template=conditionalColTemplate)
+  >>> conditionalColumn = ConditionalColumn(content, request, view)
+
+Let's create some viewlets. We also use the previous viewlets supporting no
+weight and or no available attribute:
+
+  >>> from zope.viewlet import viewlet
+  >>> class AvailableViewlet(viewlet.ViewletBase):
+  ... 
+  ...     weight = 4
+  ... 
+  ...     available = True
+  ... 
+  ...     def render(self):
+  ...         return u'<div>available</div>'
+
+  >>> class UnAvailableViewlet(viewlet.ViewletBase):
+  ... 
+  ...     weight = 5
+  ... 
+  ...     available = False
+  ... 
+  ...     def render(self):
+  ...         return u'<div>not available</div>'
+
+  >>> defineChecker(AvailableViewlet, viewletChecker)
+  >>> defineChecker(UnAvailableViewlet, viewletChecker)
+
+  >>> zope.component.provideAdapter(
+  ...     ThirdViewlet,
+  ...     (zope.interface.Interface, IDefaultBrowserLayer,
+  ...      IBrowserView, IConditionalColumn),
+  ...     interfaces.IViewlet, name='third')
+
+  >>> zope.component.provideAdapter(
+  ...     FirstViewlet,
+  ...     (zope.interface.Interface, IDefaultBrowserLayer,
+  ...      IBrowserView, IConditionalColumn),
+  ...     interfaces.IViewlet, name='first')
+
+  >>> zope.component.provideAdapter(
+  ...     SecondViewlet,
+  ...     (zope.interface.Interface, IDefaultBrowserLayer,
+  ...      IBrowserView, IConditionalColumn),
+  ...     interfaces.IViewlet, name='second')
+
+  >>> zope.component.provideAdapter(
+  ...     UnWeightedViewlet,
+  ...     (zope.interface.Interface, IDefaultBrowserLayer,
+  ...      IBrowserView, IConditionalColumn),
+  ...     interfaces.IViewlet, name='unweighted')
+
+  >>> zope.component.provideAdapter(
+  ...     AvailableViewlet,
+  ...     (zope.interface.Interface, IDefaultBrowserLayer,
+  ...      IBrowserView, IConditionalColumn),
+  ...     interfaces.IViewlet, name='available')
+
+  >>> zope.component.provideAdapter(
+  ...     UnAvailableViewlet,
+  ...     (zope.interface.Interface, IDefaultBrowserLayer,
+  ...      IBrowserView, IConditionalColumn),
+  ...     interfaces.IViewlet, name='unavailable')
+
+And check the order:
+
+  >>> conditionalColumn.update()
+  >>> print conditionalColumn.render().strip()
+  <div class="conditional-column">
+    <div>unweighted</div>
+    <div>first</div>
+    <div>second</div>
+    <div>third</div>
+    <div>available</div>
+  </div>
+
+
 Viewlet Base Classes
 --------------------
 
 To make the creation of viewlets simpler, a set of useful base classes and
-helper functions are provided:
-
-  >>> from zope.viewlet import viewlet
+helper functions are provided.
 
 The first class is a base class that simply defines the constructor:
 

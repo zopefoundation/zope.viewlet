@@ -2,6 +2,16 @@
 CHANGES
 =======
 
+3.5.0dev (unreleased)
+------------------
+
+- bugfix, implemented missing __contains__ method in IViewletManager
+
+- implemented additional viewlet managers offering weight ordered sorting
+
+- implemented additional viewlet managers offering conditional filtering
+
+
 3.4.0 (2007-10-10)
 ------------------
 
