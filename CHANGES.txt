@@ -12,6 +12,14 @@ CHANGES
 - implemented additional viewlet managers offering conditional filtering
 
 
+3.4.1a (2007-4-22)
+------------------
+
+- bugfix, added a missing ',' behind zope.i18nmessageid.
+
+- recreated the README.txt removing everything except for the overview.
+
+
 3.4.0 (2007-10-10)
 ------------------
 
