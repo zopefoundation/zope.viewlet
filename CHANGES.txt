@@ -2,13 +2,13 @@
 CHANGES
 =======
 
-3.4.2 (unreleased)
+3.4.2 (2008-01-24)
 ------------------
 
-- ...
+- Re-release of 3.4.1 because of brown bag release.
 
 
-3.4.1 (2007-01-21)
+3.4.1 (2008-01-21)
 ------------------
 
 - bugfix, implemented missing __contains__ method in IViewletManager
