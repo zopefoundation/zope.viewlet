@@ -5,7 +5,7 @@ CHANGES
 3.4.3 (unreleased)
 ------------------
 
-- ...
+- Typo fix in CSSViewlet docstring.
 
 3.4.2 (2008-01-24)
 ------------------

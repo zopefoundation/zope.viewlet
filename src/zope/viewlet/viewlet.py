@@ -132,7 +132,7 @@ class CSSResourceViewletBase(ResourceViewletBase):
 
 
 def CSSViewlet(path, media="all", rel="stylesheet"):
-    """Create a viewlet that can simply insert a javascript link."""
+    """Create a viewlet that can simply insert a CSS link."""
     src = os.path.join(os.path.dirname(__file__), 'css_viewlet.pt')
 
     klass = type('CSSViewlet',
