@@ -134,7 +134,7 @@ demonstrate this behaviour.
   >>> [(ev, ev.object.__class__.__name__) for ev in events]
   [(<zope.contentprovider.interfaces.BeforeUpdateEvent...>, 'SportBox'),
    (<zope.contentprovider.interfaces.BeforeUpdateEvent...>, 'WeatherBox')]
-  
+
   >>> print leftColumn.render()
   <div class="box">Patriots (23) : Steelers (7)</div>
   <div class="box">It is sunny today!</div>
@@ -161,7 +161,7 @@ viewlets are put together:
 TODO: Fix this silly thing; viewlets should be directly available.
 
 As you can see, the viewlet manager provides a global ``options/viewlets``
-variable that is an iterable of all the avialable viewlets in the correct
+variable that is an iterable of all the available viewlets in the correct
 order:
 
   >>> leftColumn.update()
@@ -185,7 +185,7 @@ You can also lookup the viewlets directly for management purposes:
   >>> leftColumn.get('weather')
   <WeatherBox ...>
 
-The viewlet manager also provides the __contains__ method defined in 
+The viewlet manager also provides the __contains__ method defined in
 IReadMapping:
 
   >>> 'weather' in leftColumn
@@ -274,7 +274,7 @@ WeightOrderedViewletManager
 ---------------------------
 
 The weight ordered viewlet manager offers ordering viewlets by a additional
-weight argument. Viewlets which doesn't provide a weight attribute will get 
+weight argument. Viewlets which doesn't provide a weight attribute will get
 a weight of 0 (zero).
 
 Let's define a new column:
@@ -304,28 +304,28 @@ Let's create some viewlets:
 
   >>> from zope.viewlet import viewlet
   >>> class FirstViewlet(viewlet.ViewletBase):
-  ... 
+  ...
   ...     weight = 1
-  ... 
+  ...
   ...     def render(self):
   ...         return u'<div>first</div>'
 
   >>> class SecondViewlet(viewlet.ViewletBase):
-  ... 
+  ...
   ...     weight = 2
-  ... 
+  ...
   ...     def render(self):
   ...         return u'<div>second</div>'
 
   >>> class ThirdViewlet(viewlet.ViewletBase):
-  ... 
+  ...
   ...     weight = 3
-  ... 
+  ...
   ...     def render(self):
   ...         return u'<div>third</div>'
 
   >>> class UnWeightedViewlet(viewlet.ViewletBase):
-  ... 
+  ...
   ...     def render(self):
   ...         return u'<div>unweighted</div>'
 
@@ -370,14 +370,14 @@ And check the order:
   </div>
 
 
-WeightOrderedViewletManager
----------------------------
+ConditionalViewletManager
+-------------------------
 
-The conditional ordered viewlet manager offers ordering viewlets by a 
-additional weight argument and filters by the available attribute if a 
+The conditional ordered viewlet manager offers ordering viewlets by a
+additional weight argument and filters by the available attribute if a
 supported by the viewlet. Viewlets which doesn't provide a available attribute
-will not get skiped. The default weight value for vielwets which doesn't 
-provide a weight attribute is o (zero). 
+will not get skipped. The default weight value for viewlets which doesn't
+provide a weight attribute is 0 (zero).
 
 Let's define a new column:
 
@@ -408,20 +408,20 @@ weight and or no available attribute:
 
   >>> from zope.viewlet import viewlet
   >>> class AvailableViewlet(viewlet.ViewletBase):
-  ... 
+  ...
   ...     weight = 4
-  ... 
+  ...
   ...     available = True
-  ... 
+  ...
   ...     def render(self):
   ...         return u'<div>available</div>'
 
   >>> class UnAvailableViewlet(viewlet.ViewletBase):
-  ... 
+  ...
   ...     weight = 5
-  ... 
+  ...
   ...     available = False
-  ... 
+  ...
   ...     def render(self):
   ...         return u'<div>not available</div>'
 
@@ -608,7 +608,7 @@ absolute URL for it:
   </script>
 
 
-There is also a javascript viewlet base class which knows how to render more 
+There is also a javascript viewlet base class which knows how to render more
 then one javascript resource file:
 
   >>> class JSSecondResource(object):
@@ -746,7 +746,7 @@ represent the files in a table:
   >>> open(contentsTemplate, 'w').write('''
   ... <html>
   ...   <body>
-  ...     <h1>Cotnents</h1>
+  ...     <h1>Contents</h1>
   ...     <div tal:content="structure provider:contents" />
   ...   </body>
   ... </html>
@@ -821,7 +821,7 @@ Since we have not defined any viewlets yet, the table is totally empty:
   >>> print contents().strip()
   <html>
     <body>
-      <h1>Cotnents</h1>
+      <h1>Contents</h1>
       <div>
         <table>
           <tr>
@@ -867,7 +867,7 @@ we should be able to see the name for each file in the container:
   >>> print contents().strip()
   <html>
     <body>
-      <h1>Cotnents</h1>
+      <h1>Contents</h1>
       <div>
         <table>
           <tr>
@@ -889,7 +889,7 @@ that we want to see the name as a column in the table:
   >>> print contents().strip()
   <html>
     <body>
-      <h1>Cotnents</h1>
+      <h1>Contents</h1>
       <div>
         <table>
           <tr>
@@ -942,7 +942,7 @@ we can see an entry for it:
   >>> print contents().strip()
   <html>
     <body>
-      <h1>Cotnents</h1>
+      <h1>Contents</h1>
       <div>
         <table>
           <tr>
@@ -983,7 +983,7 @@ the result will be
   >>> print contents().strip()
   <html>
     <body>
-      <h1>Cotnents</h1>
+      <h1>Contents</h1>
       <div>
         <table>
           <tr>
@@ -1106,7 +1106,7 @@ Finally we sort the contents by name:
   >>> print contents().strip()
   <html>
     <body>
-      <h1>Cotnents</h1>
+      <h1>Contents</h1>
       <div>
         <table>
           <tr>
@@ -1145,7 +1145,7 @@ Now let's sort by size:
   >>> print contents().strip()
   <html>
     <body>
-      <h1>Cotnents</h1>
+      <h1>Contents</h1>
       <div>
         <table>
           <tr>
@@ -1206,4 +1206,3 @@ Cleanup
 
   >>> import shutil
   >>> shutil.rmtree(temp_dir)
-
