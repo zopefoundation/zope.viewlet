@@ -310,8 +310,8 @@ be rendered upon calling the viewlet:
   >>> viewlet.render()
   u'SRC $5.19'
 
-A final feature the ``viewlet`` directive supports is the additional
-specification of any amount keyword arguments:
+A final feature the ``viewlet`` directive is that it supports the
+specification of any number of keyword arguments:
 
   >>> context = xmlconfig.string('''
   ... <configure xmlns="http://namespaces.zope.org/browser" i18n_domain="zope">
