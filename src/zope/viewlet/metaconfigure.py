@@ -23,11 +23,11 @@ from zope.security import checker
 from zope.configuration.exceptions import ConfigurationError
 from zope.interface import Interface, classImplements
 from zope.publisher.interfaces.browser import IDefaultBrowserLayer
+from zope.publisher.interfaces.browser import IBrowserPublisher
 from zope.publisher.interfaces.browser import IBrowserView
 from zope.component import zcml
+from zope.component.interface import provideInterface
 from zope.viewlet import viewlet, manager, interfaces
-
-from zope.app.publisher.browser import viewmeta
 
 def viewletManagerDirective(
     _context, name, permission,
@@ -39,7 +39,7 @@ def viewletManagerDirective(
     required = {}
 
     # Get the permission; mainly to correctly handle CheckerPublic.
-    permission = viewmeta._handle_permission(_context, permission)
+    permission = _handle_permission(_context, permission)
 
     # If class is not given we use the basic viewlet manager.
     if class_ is None:
@@ -66,19 +66,19 @@ def viewletManagerDirective(
 
     # Register the ``provides`` interface and register fields in the security
     # dictionary
-    viewmeta._handle_allowed_interface(
+    _handle_allowed_interface(
         _context, (provides,), permission, required)
 
     # Register the allowed interface and add the field's security entries
-    viewmeta._handle_allowed_interface(
+    _handle_allowed_interface(
         _context, allowed_interface, permission, required)
 
     # Register single allowed attributes in the security dictionary
-    viewmeta._handle_allowed_attributes(
+    _handle_allowed_attributes(
         _context, allowed_attributes, permission, required)
 
     # Register interfaces
-    viewmeta._handle_for(_context, for_)
+    _handle_for(_context, for_)
     zcml.interface(_context, view)
 
     # Create a checker for the viewlet manager
@@ -104,7 +104,7 @@ def viewletDirective(
     required = {}
 
     # Get the permission; mainly to correctly handle CheckerPublic.
-    permission = viewmeta._handle_permission(_context, permission)
+    permission = _handle_permission(_context, permission)
 
     # Either the class or template must be specified.
     if not (class_ or template):
@@ -162,19 +162,19 @@ def viewletDirective(
                                                attributes=kwargs)
 
     # Set up permission mapping for various accessible attributes
-    viewmeta._handle_allowed_interface(
+    _handle_allowed_interface(
         _context, allowed_interface, permission, required)
-    viewmeta._handle_allowed_attributes(
+    _handle_allowed_attributes(
         _context, allowed_attributes, permission, required)
-    viewmeta._handle_allowed_attributes(
+    _handle_allowed_attributes(
         _context, kwargs.keys(), permission, required)
-    viewmeta._handle_allowed_attributes(
+    _handle_allowed_attributes(
         _context,
         (attribute, 'browserDefault', 'update', 'render', 'publishTraverse'),
         permission, required)
 
     # Register the interfaces.
-    viewmeta._handle_for(_context, for_)
+    _handle_for(_context, for_)
     zcml.interface(_context, view)
 
     # Create the security checker for the new class
@@ -187,3 +187,38 @@ def viewletDirective(
         args = ('registerAdapter',
                 new_class, (for_, layer, view, manager), interfaces.IViewlet,
                  name, _context.info),)
+
+def _handle_permission(_context, permission):
+    if permission == 'zope.Public':
+        permission = checker.CheckerPublic
+
+    return permission
+
+def _handle_allowed_interface(_context, allowed_interface, permission,
+                              required):
+    # Allow access for all names defined by named interfaces
+    if allowed_interface:
+        for i in allowed_interface:
+            _context.action(
+                discriminator = None,
+                callable = provideInterface,
+                args = (None, i)
+                )
+
+            for name in i:
+                required[name] = permission
+
+def _handle_allowed_attributes(_context, allowed_attributes, permission,
+                               required):
+    # Allow access for all named attributes
+    if allowed_attributes:
+        for name in allowed_attributes:
+            required[name] = permission
+
+def _handle_for(_context, for_):
+    if for_ is not None:
+        _context.action(
+            discriminator = None,
+            callable = provideInterface,
+            args = ('', for_)
+            )

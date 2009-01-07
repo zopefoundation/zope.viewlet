@@ -2,10 +2,15 @@
 CHANGES
 =======
 
-3.4.3 (unreleased)
+3.5.0 (unreleased)
 ------------------
 
+- Removed the dependency on `zope.app.publisher` by moving four simple helper
+  functions into this package and making the interface for describing the
+  ZCML content provider directive explicit.
+
 - Typo fix in CSSViewlet docstring.
+
 
 3.4.2 (2008-01-24)
 ------------------

@@ -20,14 +20,15 @@ __docformat__ = 'restructuredtext'
 import zope.configuration.fields
 import zope.schema
 from zope.publisher.interfaces import browser
+from zope.security.zcml import Permission
 from zope.i18nmessageid import MessageFactory
+from zope.interface import Interface
 _ = MessageFactory('zope')
 
-from zope.app.publisher.browser import metadirectives
 from zope.viewlet import interfaces
 
 
-class IContentProvider(metadirectives.IPagesDirective):
+class IContentProvider(Interface):
     """A directive to register a simple content provider.
 
     Content providers are registered by their context (`for` attribute), the
@@ -51,6 +52,58 @@ class IContentProvider(metadirectives.IPagesDirective):
                       "``provider`` namespace to look up the content "
                       "provider."),
         required=True)
+
+    for_ = zope.configuration.fields.GlobalObject(
+        title=u"The interface or class this view is for.",
+        required=False
+        )
+
+    permission = Permission(
+        title=u"Permission",
+        description=u"The permission needed to use the view.",
+        required=True
+        )
+
+    class_ = zope.configuration.fields.GlobalObject(
+        title=_("Class"),
+        description=_("A class that provides attributes used by the view."),
+        required=False,
+        )
+
+    layer = zope.configuration.fields.GlobalInterface(
+        title=_("The layer the view is in."),
+        description=_("""
+        A skin is composed of layers. It is common to put skin
+        specific views in a layer named after the skin. If the 'layer'
+        attribute is not supplied, it defaults to 'default'."""),
+        required=False,
+        )
+
+    allowed_interface = zope.configuration.fields.Tokens(
+        title=_("Interface that is also allowed if user has permission."),
+        description=_("""
+        By default, 'permission' only applies to viewing the view and
+        any possible sub views. By specifying this attribute, you can
+        make the permission also apply to everything described in the
+        supplied interface.
+
+        Multiple interfaces can be provided, separated by
+        whitespace."""),
+        required=False,
+        value_type=zope.configuration.fields.GlobalInterface(),
+        )
+
+    allowed_attributes = zope.configuration.fields.Tokens(
+        title=_("View attributes that are also allowed if the user"
+                " has permission."),
+        description=_("""
+        By default, 'permission' only applies to viewing the view and
+        any possible sub views. By specifying 'allowed_attributes',
+        you can make the permission also apply to the extra attributes
+        on the view object."""),
+        required=False,
+        value_type=zope.configuration.fields.PythonIdentifier(),
+        )
 
 
 class ITemplatedContentProvider(IContentProvider):

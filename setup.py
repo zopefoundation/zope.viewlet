@@ -22,7 +22,7 @@ def read(*rnames):
     return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
 
 setup(name='zope.viewlet',
-      version = '3.4.3dev',
+      version = '3.5.0dev',
       author='Zope Corporation and Contributors',
       author_email='zope3-dev@zope.org',
       description='Zope Viewlets',
@@ -62,7 +62,6 @@ setup(name='zope.viewlet',
       install_requires=[
           'setuptools',
           'zope.app.pagetemplate',
-          'zope.app.publisher',
           'zope.component',
           'zope.configuration',
           'zope.contentprovider',
