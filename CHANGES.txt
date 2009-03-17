@@ -7,6 +7,8 @@ CHANGES
 
 - Remove ZCML slugs and old zpkg-related files.
 
+- Drop all testing dependncies except ``zope.testing``.
+
 
 3.5.0 (2009-01-26)
 ------------------

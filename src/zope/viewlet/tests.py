@@ -16,20 +16,18 @@
 $Id$
 """
 __docformat__ = 'restructuredtext'
-
+import sys
 import unittest
-import zope.component
-import zope.security
-from zope.testing import doctest
-from zope.testing.doctestunit import DocFileSuite
-from zope.app.testing import setup
 
-class TestParticipation(object):
-    principal = 'foobar'
-    interaction = None
+import zope.component
+from zope.testing import doctest, cleanup
+from zope.traversing.testing import setUp as traversingSetUp
+from zope.component import eventtesting
 
 def setUp(test):
-    setup.placefulSetUp()
+    cleanup.setUp()
+    eventtesting.setUp()
+    traversingSetUp()
 
     # resource namespace setup
     from zope.traversing.interfaces import ITraversable
@@ -43,28 +41,38 @@ def setUp(test):
     from zope.contentprovider import tales
     metaconfigure.registerType('provider', tales.TALESProviderExpression)
 
-    zope.security.management.getInteraction().add(TestParticipation())
+def tearDown(test):
+    cleanup.tearDown()
+
+class FakeModule(object):
+    """A fake module."""
+    
+    def __init__(self, dict):
+        self.__dict = dict
+
+    def __getattr__(self, name):
+        try:
+            return self.__dict[name]
+        except KeyError:
+            raise AttributeError(name)
 
 def directivesSetUp(test):
     setUp(test)
-    setup.setUpTestAsModule(test, 'zope.viewlet.directives')
-
-
-def tearDown(test):
-    setup.placefulTearDown()
+    test.globs['__name__'] = 'zope.viewlet.directives'
+    sys.modules['zope.viewlet.directives'] = FakeModule(test.globs)
 
 def directivesTearDown(test):
     tearDown(test)
-    setup.tearDownTestAsModule(test)
-
+    del sys.modules[test.globs['__name__']]
+    test.globs.clear()
 
 def test_suite():
     return unittest.TestSuite((
-        DocFileSuite('README.txt',
+        doctest.DocFileSuite('README.txt',
                      setUp=setUp, tearDown=tearDown,
                      optionflags=doctest.NORMALIZE_WHITESPACE|doctest.ELLIPSIS,
                      ),
-        DocFileSuite('directives.txt',
+        doctest.DocFileSuite('directives.txt',
                      setUp=directivesSetUp, tearDown=directivesTearDown,
                      optionflags=doctest.NORMALIZE_WHITESPACE|doctest.ELLIPSIS,
                      ),

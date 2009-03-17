@@ -55,10 +55,7 @@ setup(name='zope.viewlet',
       package_dir = {'': 'src'},
       namespace_packages=['zope'],
       extras_require = dict(
-          test=['zope.app.testing',
-                'zope.testing',
-                'zope.app.securitypolicy',
-                'zope.app.zcmlfiles']),
+          test=['zope.testing',]),
       install_requires=[
           'setuptools',
           'zope.app.pagetemplate',
