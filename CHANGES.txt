@@ -5,6 +5,8 @@ CHANGES
 3.5.1 (unreleased)
 ------------------
 
+- Remove ZCML slugs and old zpkg-related files.
+
 
 3.5.0 (2009-01-26)
 ------------------
