@@ -2,8 +2,10 @@
 CHANGES
 =======
 
-3.5.1 (unreleased)
+3.6.0 (2009-08-02)
 ------------------
+
+- Optimize the the script tag for the JS viewlet. This makes YSlow happy.
 
 - Remove ZCML slugs and old zpkg-related files.
 
