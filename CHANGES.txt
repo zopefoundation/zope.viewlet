@@ -5,7 +5,7 @@ CHANGES
 3.6.1 (unreleased)
 ------------------
 
-- ...
+- Fixed unit tests in README.txt.
 
 3.6.0 (2009-08-02)
 ------------------

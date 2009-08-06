@@ -604,8 +604,7 @@ absolute URL for it:
 
   >>> JSViewlet = viewlet.JavaScriptViewlet('resource.js')
   >>> print JSViewlet(content, request, view, manager).render().strip()
-  <script type="text/javascript" src="/@@/resource.js">
-  </script>
+  <script type="text/javascript" src="/@@/resource.js"></script>
 
 
 There is also a javascript viewlet base class which knows how to render more
