@@ -2,7 +2,7 @@
 CHANGES
 =======
 
-3.6.1 (unreleased)
+3.6.1 (2009-08-29)
 ------------------
 
 - Fixed unit tests in README.txt.
