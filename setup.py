@@ -27,7 +27,7 @@ def read(*rnames):
     return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
 
 setup(name='zope.viewlet',
-      version = '3.6.2dev',
+      version = '3.7.0dev',
       author='Zope Corporation and Contributors',
       author_email='zope-dev@zope.org',
       description='Zope Viewlets',
@@ -43,7 +43,7 @@ setup(name='zope.viewlet',
           + '\n\n' +
           read('CHANGES.txt')
           ),
-      keywords = "zope3 web html ui viewlet pattern",
+      keywords = "zope web html ui viewlet pattern",
       classifiers = [
           'Development Status :: 5 - Production/Stable',
           'Environment :: Web Environment',
@@ -60,10 +60,13 @@ setup(name='zope.viewlet',
       package_dir = {'': 'src'},
       namespace_packages=['zope'],
       extras_require = dict(
-          test=['zope.testing',]),
+          test=[
+            'zope.testing',
+            'zope.size',
+            ]),
       install_requires=[
           'setuptools',
-          'zope.app.pagetemplate',
+          'zope.browserpage>=3.10.1',
           'zope.component',
           'zope.configuration',
           'zope.contentprovider',

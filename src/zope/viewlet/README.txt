@@ -751,7 +751,7 @@ represent the files in a table:
   ... </html>
   ... ''')
 
-  >>> from zope.app.pagetemplate.simpleviewclass import SimpleViewClass
+  >>> from zope.browserpage.simpleviewclass import SimpleViewClass
   >>> Contents = SimpleViewClass(contentsTemplate, name='contents.html')
 
 
@@ -803,8 +803,7 @@ Now we need a template to produce the contents table:
 From the two pieces above, we can generate the final viewlet manager class and
 register it (it's a bit tedious, I know):
 
-  >>> from zope.app.pagetemplate.viewpagetemplatefile import \
-  ...     ViewPageTemplateFile
+  >>> from zope.browserpage import ViewPageTemplateFile
   >>> ContentsViewletManager = type(
   ...     'ContentsViewletManager', (ContentsViewletManager,),
   ...     {'index': ViewPageTemplateFile(tableTemplate)})

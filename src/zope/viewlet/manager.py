@@ -21,7 +21,7 @@ import zope.component
 import zope.interface
 import zope.security
 import zope.event
-from zope.app.pagetemplate.viewpagetemplatefile import ViewPageTemplateFile
+from zope.browserpage import ViewPageTemplateFile
 
 from zope.viewlet import interfaces
 from zope.location.interfaces import ILocation

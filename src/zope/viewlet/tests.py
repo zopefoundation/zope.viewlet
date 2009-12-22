@@ -37,7 +37,7 @@ def setUp(test):
     zope.component.provideAdapter(
         resource, (None, None), ITraversable, name = "resource")
 
-    from zope.app.pagetemplate import metaconfigure
+    from zope.browserpage import metaconfigure
     from zope.contentprovider import tales
     metaconfigure.registerType('provider', tales.TALESProviderExpression)
 
