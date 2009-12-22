@@ -2,7 +2,7 @@
 CHANGES
 =======
 
-3.7.0 (unreleased)
+3.7.0 (2009-12-22)
 ------------------
 
 - Depend on zope.browserpage in favor of zope.app.pagetemplate.
