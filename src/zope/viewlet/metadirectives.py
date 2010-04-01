@@ -151,7 +151,7 @@ class IViewletDirective(ITemplatedContentProvider):
     manager = zope.configuration.fields.GlobalObject(
         title=_("view"),
         description=u"The interface of the view this viewlet is for. "
-                    u"(default IBrowserView)""",
+                    u"(default IBrowserView)",
         required=False,
         default=interfaces.IViewletManager)
 
