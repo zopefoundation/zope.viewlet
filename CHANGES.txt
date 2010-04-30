@@ -5,6 +5,8 @@ CHANGES
 3.7.1 (unreleased)
 ------------------
 
+- Removed use of 'zope.testing.doctest' in favor of stdlib's 'doctest.
+
 - Fixed dubious quoting in metadirectives.py. Closes
   https://bugs.launchpad.net/zope2/+bug/143774.
 

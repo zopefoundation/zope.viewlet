@@ -16,11 +16,13 @@
 $Id$
 """
 __docformat__ = 'restructuredtext'
+
+import doctest
 import sys
 import unittest
 
 import zope.component
-from zope.testing import doctest, cleanup
+from zope.testing import cleanup
 from zope.traversing.testing import setUp as traversingSetUp
 from zope.component import eventtesting
 
