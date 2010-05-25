@@ -2,7 +2,7 @@
 CHANGES
 =======
 
-3.7.2 (unreleased)
+3.7.2 (2010-05-25)
 ------------------
 
 - Fixed unit tests broken under Python 2.4 by the switch to the standard
@@ -17,15 +17,18 @@ CHANGES
 - Fixed dubious quoting in metadirectives.py. Closes
   https://bugs.launchpad.net/zope2/+bug/143774.
 
+
 3.7.0 (2009-12-22)
 ------------------
 
 - Depend on zope.browserpage in favor of zope.app.pagetemplate.
 
+
 3.6.1 (2009-08-29)
 ------------------
 
 - Fixed unit tests in README.txt.
+
 
 3.6.0 (2009-08-02)
 ------------------
