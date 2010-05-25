@@ -5,6 +5,9 @@ CHANGES
 3.7.2 (unreleased)
 ------------------
 
+- Fixed unit tests broken under Python 2.4 by the switch to the standard
+  library ``doctest`` module.
+
 
 3.7.1 (2010-04-30)
 ------------------
