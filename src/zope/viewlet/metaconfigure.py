@@ -12,8 +12,6 @@
 #
 ##############################################################################
 """Viewlet metadconfigure
-
-$Id$
 """
 __docformat__ = 'restructuredtext'
 

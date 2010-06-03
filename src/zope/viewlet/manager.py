@@ -12,8 +12,6 @@
 #
 ##############################################################################
 """Content Provider Manager implementation
-
-$Id$
 """
 __docformat__ = 'restructuredtext'
 

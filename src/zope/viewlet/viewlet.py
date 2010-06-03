@@ -12,8 +12,6 @@
 #
 ##############################################################################
 """Viewlet implementation
-
-$Id$
 """
 __docformat__ = 'restructuredtext'
 
