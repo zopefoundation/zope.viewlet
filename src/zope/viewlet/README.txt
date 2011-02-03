@@ -26,7 +26,7 @@ has no Java counterpart, since Java does not implement content providers using
 a component architecture and thus does not register content providers
 specifically for viewlet managers, which I believe makes the Java
 implementation less useful as a generic concept. In fact, the main design
-goal in the Java world is the implementation of reusable and sharable
+goal in the Java world is the implementation of reusable and shareable
 portlets. The scope for Zope 3 is larger, since we want to provide a generic
 framework for building pluggable user interfaces.
 
