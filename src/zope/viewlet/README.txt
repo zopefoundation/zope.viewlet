@@ -49,16 +49,17 @@ You can then create a viewlet manager using this interface now:
 Now we have to instantiate it:
 
   >>> import zope.interface
-  >>> class Content(object):
-  ...     zope.interface.implements(zope.interface.Interface)
+  >>> @zope.interface.implementer(zope.interface.Interface)
+  ... class Content(object):
+  ...     pass
   >>> content = Content()
 
   >>> from zope.publisher.browser import TestRequest
   >>> request = TestRequest()
 
   >>> from zope.publisher.interfaces.browser import IBrowserView
-  >>> class View(object):
-  ...     zope.interface.implements(IBrowserView)
+  >>> @zope.interface.implementer(IBrowserView)
+  ... class View(object):
   ...     def __init__(self, context, request):
   ...         pass
   >>> view = View(content, request)
@@ -76,8 +77,8 @@ But now we register some viewlets for the manager
   >>> import zope.component
   >>> from zope.publisher.interfaces.browser import IDefaultBrowserLayer
 
-  >>> class WeatherBox(object):
-  ...     zope.interface.implements(interfaces.IViewlet)
+  >>> @zope.interface.implementer(interfaces.IViewlet)
+  ... class WeatherBox(object):
   ...
   ...     def __init__(self, context, request, view, manager):
   ...         self.__parent__ = view
@@ -100,9 +101,9 @@ But now we register some viewlets for the manager
   ...     interfaces.IViewlet, name='weather')
 
   >>> from zope.location.interfaces import ILocation
-  >>> class SportBox(object):
-  ...     zope.interface.implements(interfaces.IViewlet,
+  >>> @zope.interface.implementer(interfaces.IViewlet,
   ...         ILocation)
+  ... class SportBox(object):
   ...
   ...     def __init__(self, context, request, view, manager):
   ...         self.__parent__ = view
@@ -695,8 +696,8 @@ generic contents view for files. The step is to create a file component:
   >>> class IFile(zope.interface.Interface):
   ...     data = zope.interface.Attribute('Data of file.')
 
-  >>> class File(object):
-  ...     zope.interface.implements(IFile)
+  >>> @zope.interface.implementer(IFile)
+  ... class File(object):
   ...     def __init__(self, data=''):
   ...         self.__name__ = ''
   ...         self.data = data
@@ -705,9 +706,9 @@ Since we want to also provide the size of a file, here a simple implementation
 of the ``ISized`` interface:
 
   >>> from zope import size
-  >>> class FileSized(object):
-  ...     zope.interface.implements(size.interfaces.ISized)
-  ...     zope.component.adapts(IFile)
+  >>> @zope.interface.implementer(size.interfaces.ISized)
+  ... @zope.component.adapter(IFile)
+  ... class FileSized(object):
   ...
   ...     def __init__(self, file):
   ...         self.file = file
@@ -764,8 +765,8 @@ different item:
 
   >>> shownColumns = []
 
-  >>> class ContentsViewletManager(object):
-  ...     zope.interface.implements(interfaces.IViewletManager)
+  >>> @zope.interface.implementer(interfaces.IViewletManager)
+  ... class ContentsViewletManager(object):
   ...     index = None
   ...
   ...     def __init__(self, context, request, view):
@@ -1027,16 +1028,16 @@ sorting using a simple utility:
   ...     def sort(values):
   ...         """Sort the values."""
 
-  >>> class SortByName(object):
-  ...     zope.interface.implements(ISorter)
+  >>> @zope.interface.implementer(ISorter)
+  ... class SortByName(object):
   ...
   ...     def sort(self, values):
   ...         return sorted(values, lambda x, y: cmp(x.__name__, y.__name__))
 
   >>> zope.component.provideUtility(SortByName(), name='name')
 
-  >>> class SortBySize(object):
-  ...     zope.interface.implements(ISorter)
+  >>> @zope.interface.implementer(ISorter)
+  ... class SortBySize(object):
   ...
   ...     def sort(self, values):
   ...         return sorted(
@@ -1052,8 +1053,8 @@ viewlet manager much simpler:
 
   >>> sortByColumn = ''
 
-  >>> class SortedContentsViewletManager(object):
-  ...     zope.interface.implements(interfaces.IViewletManager)
+  >>> @zope.interface.implementer(interfaces.IViewletManager)
+  ... class SortedContentsViewletManager(object):
   ...     index = None
   ...
   ...     def __init__(self, context, request, view):

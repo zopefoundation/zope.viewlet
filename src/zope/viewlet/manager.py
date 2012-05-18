@@ -25,12 +25,12 @@ from zope.viewlet import interfaces
 from zope.location.interfaces import ILocation
 from zope.contentprovider.interfaces import BeforeUpdateEvent
 
+@zope.interface.implementer(interfaces.IViewletManager)
 class ViewletManagerBase(object):
     """The Viewlet Manager Base
 
     A generic manager class which can be instantiated
     """
-    zope.interface.implements(interfaces.IViewletManager)
     template = None
 
     def __init__(self, context, request, view):

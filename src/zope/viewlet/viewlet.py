@@ -25,10 +25,9 @@ from zope.viewlet import interfaces
 from zope.browserpage import simpleviewclass
 from zope.browserpage import ViewPageTemplateFile
 
+@zope.interface.implementer(interfaces.IViewlet)
 class ViewletBase(BrowserView):
     """Viewlet adapter class used in meta directive as a mixin class."""
-
-    zope.interface.implements(interfaces.IViewlet)
 
     def __init__(self, context, request, view, manager):
         super(ViewletBase, self).__init__(context, request)

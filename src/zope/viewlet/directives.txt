@@ -30,8 +30,9 @@ registration; to do that, we create some dummy content, request and view
 objects:
 
   >>> import zope.interface
-  >>> class Content(object):
-  ...     zope.interface.implements(zope.interface.Interface)
+  >>> @zope.interface.implementer(zope.interface.Interface)
+  ... class Content(object):
+  ...     pass
   >>> content = Content()
 
   >>> from zope.publisher.browser import TestRequest
