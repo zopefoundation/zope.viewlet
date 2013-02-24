@@ -100,7 +100,8 @@ Next let's see what happens, if we specify a template for the viewlet manager:
   >>> temp_dir = tempfile.mkdtemp()
 
   >>> leftColumnTemplate = os.path.join(temp_dir, 'leftcolumn.pt')
-  >>> open(leftColumnTemplate, 'w').write('''
+  >>> with open(leftColumnTemplate, 'w') as file:
+  ...     _ = file.write('''
   ... <div class="column">
   ...    <div class="entry"
   ...         tal:repeat="viewlet options/viewlets"
@@ -129,7 +130,7 @@ Next let's see what happens, if we specify a template for the viewlet manager:
   >>> manager.template
   <BoundPageTemplateFile of ...<ViewletManager providing ILeftColumn>  ...>>
   >>> manager.update()
-  >>> print manager.render().strip()
+  >>> print(manager.render().strip())
   <div class="column">
   </div>
 
@@ -140,8 +141,7 @@ weight attribute in the viewlet:
 
   >>> class WeightBasedSorting(object):
   ...     def sort(self, viewlets):
-  ...         return sorted(viewlets,
-  ...                       lambda x, y: cmp(x[1].weight, y[1].weight))
+  ...         return sorted(viewlets, key=lambda x: getattr(x[1], 'weight', 0))
 
   >>> context = xmlconfig.string('''
   ... <configure xmlns="http://namespaces.zope.org/browser" i18n_domain="zope">
@@ -168,7 +168,7 @@ weight attribute in the viewlet:
   >>> manager.template
   <BoundPageTemplateFile of ...<ViewletManager providing ILeftColumn>  ...>>
   >>> manager.update()
-  >>> print manager.render().strip()
+  >>> print(manager.render().strip())
   <div class="column">
   </div>
 
@@ -199,7 +199,8 @@ except that the viewlet is also registered for a particular manager interface,
 as seen below:
 
   >>> weatherTemplate = os.path.join(temp_dir, 'weather.pt')
-  >>> open(weatherTemplate, 'w').write('''
+  >>> with open(weatherTemplate, 'w') as file:
+  ...     _ = file.write('''
   ... <div>sunny</div>
   ... ''')
 
@@ -228,7 +229,7 @@ If we look into the adapter registry, we will find the viewlet:
 The manager now also gives us the output of the one and only viewlet:
 
   >>> manager.update()
-  >>> print manager.render().strip()
+  >>> print(manager.render().strip())
   <div class="column">
     <div class="entry">
       <div>sunny</div>

@@ -87,8 +87,8 @@ class ViewletManagerBase(object):
 
         ``viewlets`` is a list of tuples of the form (name, viewlet).
         """
-        # By default, use the standard Python way of doing sorting.
-        return sorted(viewlets, lambda x, y: cmp(x[1], y[1]))
+        # By default, we are not sorting by viewlet name.
+        return sorted(viewlets, key=lambda x: x[0])
 
     def update(self):
         """See zope.contentprovider.interfaces.IContentProvider"""
@@ -143,7 +143,8 @@ def ViewletManager(name, interface, template=None, bases=()):
     return ViewletManager
 
 
-def getWeight((name, viewlet)):
+def getWeight(item):
+    name, viewlet = item
     try:
         return int(viewlet.weight)
     except AttributeError:

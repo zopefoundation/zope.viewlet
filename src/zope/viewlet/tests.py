@@ -13,17 +13,25 @@
 ##############################################################################
 """Viewlet tests
 """
-__docformat__ = 'restructuredtext'
-
 import os
 import doctest
+import re
 import sys
 import unittest
 
 import zope.component
-from zope.testing import cleanup
-from zope.traversing.testing import setUp as traversingSetUp
 from zope.component import eventtesting
+from zope.traversing.testing import setUp as traversingSetUp
+from zope.testing import cleanup, renormalizing
+
+checker = renormalizing.RENormalizing([
+    # Python 3 unicode removed the "u".
+    (re.compile("u('.*?')"),
+     r"\1"),
+    (re.compile('u(".*?")'),
+     r"\1"),
+    ])
+
 
 def setUp(test):
     cleanup.setUp()
@@ -47,7 +55,7 @@ def tearDown(test):
 
 class FakeModule(object):
     """A fake module."""
-    
+
     def __init__(self, dict):
         self.__dict = dict
 
@@ -68,19 +76,25 @@ def directivesTearDown(test):
     test.globs.clear()
 
 def test_suite():
+    flags = doctest.NORMALIZE_WHITESPACE | \
+            doctest.ELLIPSIS | \
+            doctest.IGNORE_EXCEPTION_DETAIL
+
     return unittest.TestSuite((
-        doctest.DocFileSuite('README.txt',
-                     setUp=setUp, tearDown=tearDown,
-                     optionflags=doctest.NORMALIZE_WHITESPACE|doctest.ELLIPSIS,
-                     globs = {'__file__': os.path.join(
-                         os.path.dirname(__file__), 'README.txt')}
-                     ),
-        doctest.DocFileSuite('directives.txt',
-                     setUp=directivesSetUp, tearDown=directivesTearDown,
-                     optionflags=doctest.NORMALIZE_WHITESPACE|doctest.ELLIPSIS,
-                     globs = {'__file__': os.path.join(
-                         os.path.dirname(__file__), 'directives.txt')}
-                     ),
+        doctest.DocFileSuite(
+                'README.txt',
+                setUp=setUp, tearDown=tearDown,
+                optionflags=flags, checker=checker,
+                globs = {'__file__': os.path.join(
+                        os.path.dirname(__file__), 'README.txt')}
+                ),
+        doctest.DocFileSuite(
+                'directives.txt',
+                setUp=directivesSetUp, tearDown=directivesTearDown,
+                optionflags=flags, checker=checker,
+                globs = {'__file__': os.path.join(
+                        os.path.dirname(__file__), 'directives.txt')}
+                ),
         ))
 
 if __name__ == '__main__':

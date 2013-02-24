@@ -132,11 +132,12 @@ demonstrate this behaviour.
   ...     events.append(ev)
   >>> zope.component.provideHandler(handler, (IBeforeUpdateEvent,))
   >>> leftColumn.update()
-  >>> [(ev, ev.object.__class__.__name__) for ev in events]
+  >>> sorted([(ev, ev.object.__class__.__name__) for ev in events],
+  ...        key=lambda x: x[1])
   [(<zope.contentprovider.interfaces.BeforeUpdateEvent...>, 'SportBox'),
    (<zope.contentprovider.interfaces.BeforeUpdateEvent...>, 'WeatherBox')]
 
-  >>> print leftColumn.render()
+  >>> print(leftColumn.render())
   <div class="box">Patriots (23) : Steelers (7)</div>
   <div class="box">It is sunny today!</div>
 
@@ -148,7 +149,8 @@ viewlets are put together:
   >>> import os, tempfile
   >>> temp_dir = tempfile.mkdtemp()
   >>> leftColTemplate = os.path.join(temp_dir, 'leftCol.pt')
-  >>> open(leftColTemplate, 'w').write('''
+  >>> with open(leftColTemplate, 'w') as file:
+  ...     _ = file.write('''
   ... <div class="left-column">
   ...   <tal:block repeat="viewlet options/viewlets"
   ...              replace="structure viewlet/render" />
@@ -166,7 +168,7 @@ variable that is an iterable of all the available viewlets in the correct
 order:
 
   >>> leftColumn.update()
-  >>> print leftColumn.render().strip()
+  >>> print(leftColumn.render().strip())
   <div class="left-column">
     <div class="box">Patriots (23) : Steelers (7)</div>
     <div class="box">It is sunny today!</div>
@@ -242,7 +244,7 @@ Let's now create a new viewlet manager:
 So we get the weather box first and the sport box second:
 
   >>> leftColumn.update()
-  >>> print leftColumn.render().strip()
+  >>> print(leftColumn.render().strip())
   <div class="left-column">
     <div class="box">It is sunny today!</div>
     <div class="box">Patriots (23) : Steelers (7)</div>
@@ -255,7 +257,7 @@ Now let's change the order...
 and the order should switch as well:
 
   >>> leftColumn.update()
-  >>> print leftColumn.render().strip()
+  >>> print(leftColumn.render().strip())
   <div class="left-column">
     <div class="box">Patriots (23) : Steelers (7)</div>
     <div class="box">It is sunny today!</div>
@@ -265,7 +267,7 @@ Of course, we also can remove a shown viewlet:
 
   >>> weather = shown.pop()
   >>> leftColumn.update()
-  >>> print leftColumn.render().strip()
+  >>> print(leftColumn.render().strip())
   <div class="left-column">
     <div class="box">Patriots (23) : Steelers (7)</div>
   </div>
@@ -286,7 +288,8 @@ Let's define a new column:
 First register a template for the weight ordered viewlet manager:
 
   >>> weightedColTemplate = os.path.join(temp_dir, 'weightedColTemplate.pt')
-  >>> open(weightedColTemplate, 'w').write('''
+  >>> with open(weightedColTemplate, 'w') as file:
+  ...     _ = file.write('''
   ... <div class="weighted-column">
   ...   <tal:block repeat="viewlet options/viewlets"
   ...              replace="structure viewlet/render" />
@@ -362,7 +365,7 @@ Let's create some viewlets:
 And check the order:
 
   >>> weightedColumn.update()
-  >>> print weightedColumn.render().strip()
+  >>> print(weightedColumn.render().strip())
   <div class="weighted-column">
     <div>unweighted</div>
     <div>first</div>
@@ -389,7 +392,8 @@ First register a template for the weight ordered viewlet manager:
 
   >>> conditionalColTemplate = os.path.join(temp_dir,
   ...     'conditionalColTemplate.pt')
-  >>> open(conditionalColTemplate, 'w').write('''
+  >>> with open(conditionalColTemplate, 'w') as file:
+  ...     _ = file.write('''
   ... <div class="conditional-column">
   ...   <tal:block repeat="viewlet options/viewlets"
   ...              replace="structure viewlet/render" />
@@ -468,7 +472,7 @@ weight and or no available attribute:
 And check the order:
 
   >>> conditionalColumn.update()
-  >>> print conditionalColumn.render().strip()
+  >>> print(conditionalColumn.render().strip())
   <div class="conditional-column">
     <div>unweighted</div>
     <div>first</div>
@@ -546,10 +550,11 @@ of this function call will be a fully functional viewlet class. Let's start by
 simply specifying a template only:
 
   >>> template = os.path.join(temp_dir, 'demoTemplate.pt')
-  >>> open(template, 'w').write('''<div>contents</div>''')
+  >>> with open(template, 'w') as file:
+  ...     _ = file.write('''<div>contents</div>''')
 
   >>> Demo = viewlet.SimpleViewletClass(template)
-  >>> print Demo(content, request, view, manager).render()
+  >>> print(Demo(content, request, view, manager).render())
   <div>contents</div>
 
 Now let's additionally specify a class that can provide additional features:
@@ -604,7 +609,7 @@ absolute URL for it:
   ...     zope.interface.Interface, name='resource.js')
 
   >>> JSViewlet = viewlet.JavaScriptViewlet('resource.js')
-  >>> print JSViewlet(content, request, view, manager).render().strip()
+  >>> print(JSViewlet(content, request, view, manager).render().strip())
   <script type="text/javascript" src="/@@/resource.js"></script>
 
 
@@ -625,7 +630,7 @@ then one javascript resource file:
 
   >>> JSBundleViewlet = viewlet.JavaScriptBundleViewlet(('resource.js',
   ...                                                    'second-resource.js'))
-  >>> print JSBundleViewlet(content, request, view, manager).render().strip()
+  >>> print(JSBundleViewlet(content, request, view, manager).render().strip())
   <script type="text/javascript"
           src="/@@/resource.js"> </script>
   <script type="text/javascript"
@@ -647,14 +652,14 @@ The same works for the CSS resource viewlet:
   ...     zope.interface.Interface, name='resource.css')
 
   >>> CSSViewlet = viewlet.CSSViewlet('resource.css')
-  >>> print CSSViewlet(content, request, view, manager).render().strip()
+  >>> print(CSSViewlet(content, request, view, manager).render().strip())
   <link type="text/css" rel="stylesheet"
         href="/@@/resource.css" media="all" />
 
 You can also change the media type and the rel attribute:
 
   >>> CSSViewlet = viewlet.CSSViewlet('resource.css', media='print', rel='css')
-  >>> print CSSViewlet(content, request, view, manager).render().strip()
+  >>> print(CSSViewlet(content, request, view, manager).render().strip())
   <link type="text/css" rel="css" href="/@@/resource.css"
         media="print" />
 
@@ -676,7 +681,7 @@ There is also a bundle viewlet for CSS links:
   >>> items.append({'path':'resource.css', 'rel':'stylesheet', 'media':'all'})
   >>> items.append({'path':'print-resource.css', 'media':'print'})
   >>> CSSBundleViewlet = viewlet.CSSBundleViewlet(items)
-  >>> print CSSBundleViewlet(content, request, view, manager).render().strip()
+  >>> print(CSSBundleViewlet(content, request, view, manager).render().strip())
   <link type="text/css" rel="stylesheet"
         href="/@@/resource.css" media="all" />
   <link type="text/css" rel="stylesheet"
@@ -743,7 +748,8 @@ The contents view of the container should iterate through the container and
 represent the files in a table:
 
   >>> contentsTemplate = os.path.join(temp_dir, 'contents.pt')
-  >>> open(contentsTemplate, 'w').write('''
+  >>> with open(contentsTemplate, 'w') as file:
+  ...     _ = file.write('''
   ... <html>
   ...   <body>
   ...     <h1>Contents</h1>
@@ -776,7 +782,7 @@ different item:
   ...
   ...     def update(self):
   ...         rows = []
-  ...         for name, value in self.context.items():
+  ...         for name, value in sorted(self.context.items()):
   ...             rows.append(
   ...                 [zope.component.getMultiAdapter(
   ...                     (value, self.request, self.__parent__, self),
@@ -791,7 +797,8 @@ different item:
 Now we need a template to produce the contents table:
 
   >>> tableTemplate = os.path.join(temp_dir, 'table.pt')
-  >>> open(tableTemplate, 'w').write('''
+  >>> with open(tableTemplate, 'w') as file:
+  ...     _ = file.write('''
   ... <table>
   ...   <tr tal:repeat="row view/rows">
   ...     <td tal:repeat="column row">
@@ -817,7 +824,7 @@ register it (it's a bit tedious, I know):
 Since we have not defined any viewlets yet, the table is totally empty:
 
   >>> contents = Contents(container, request)
-  >>> print contents().strip()
+  >>> print(contents().strip())
   <html>
     <body>
       <h1>Contents</h1>
@@ -863,7 +870,7 @@ and register it:
 Note how you register the viewlet on ``IFile`` and not on the container. Now
 we should be able to see the name for each file in the container:
 
-  >>> print contents().strip()
+  >>> print(contents().strip())
   <html>
     <body>
       <h1>Contents</h1>
@@ -885,7 +892,7 @@ that we want to see the name as a column in the table:
 
   >>> shownColumns = ['name']
 
-  >>> print contents().strip()
+  >>> print(contents().strip())
   <html>
     <body>
       <h1>Contents</h1>
@@ -893,12 +900,12 @@ that we want to see the name as a column in the table:
         <table>
           <tr>
             <td>
-              mypage.html
+              data.xml
             </td>
           </tr>
           <tr>
             <td>
-              data.xml
+              mypage.html
             </td>
           </tr>
           <tr>
@@ -938,7 +945,7 @@ After we added it to the list of shown columns,
 
 we can see an entry for it:
 
-  >>> print contents().strip()
+  >>> print(contents().strip())
   <html>
     <body>
       <h1>Contents</h1>
@@ -946,18 +953,18 @@ we can see an entry for it:
         <table>
           <tr>
             <td>
-              mypage.html
-            </td>
-            <td>
-              38 bytes
-            </td>
-          </tr>
-          <tr>
-            <td>
               data.xml
             </td>
             <td>
               31 bytes
+            </td>
+          </tr>
+          <tr>
+            <td>
+              mypage.html
+            </td>
+            <td>
+              38 bytes
             </td>
           </tr>
           <tr>
@@ -979,7 +986,7 @@ If we switch the two columns around,
 
 the result will be
 
-  >>> print contents().strip()
+  >>> print(contents().strip())
   <html>
     <body>
       <h1>Contents</h1>
@@ -987,18 +994,18 @@ the result will be
         <table>
           <tr>
             <td>
-              38 bytes
-            </td>
-            <td>
-              mypage.html
-            </td>
-          </tr>
-          <tr>
-            <td>
               31 bytes
             </td>
             <td>
               data.xml
+            </td>
+          </tr>
+          <tr>
+            <td>
+              38 bytes
+            </td>
+            <td>
+              mypage.html
             </td>
           </tr>
           <tr>
@@ -1032,7 +1039,7 @@ sorting using a simple utility:
   ... class SortByName(object):
   ...
   ...     def sort(self, values):
-  ...         return sorted(values, lambda x, y: cmp(x.__name__, y.__name__))
+  ...         return sorted(values, key=lambda x: x.__name__)
 
   >>> zope.component.provideUtility(SortByName(), name='name')
 
@@ -1042,8 +1049,7 @@ sorting using a simple utility:
   ...     def sort(self, values):
   ...         return sorted(
   ...             values,
-  ...             lambda x, y: cmp(size.interfaces.ISized(x).sizeForSorting(),
-  ...                              size.interfaces.ISized(y).sizeForSorting()))
+  ...             key=lambda x: size.interfaces.ISized(x).sizeForSorting())
 
   >>> zope.component.provideUtility(SortBySize(), name='size')
 
@@ -1102,7 +1108,7 @@ Finally we sort the contents by name:
   >>> shownColumns = ['name', 'size']
   >>> sortByColumn = 'name'
 
-  >>> print contents().strip()
+  >>> print(contents().strip())
   <html>
     <body>
       <h1>Contents</h1>
@@ -1141,7 +1147,7 @@ Now let's sort by size:
 
   >>> sortByColumn = 'size'
 
-  >>> print contents().strip()
+  >>> print(contents().strip())
   <html>
     <body>
       <h1>Contents</h1>
