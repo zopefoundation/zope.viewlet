@@ -13,8 +13,6 @@
 ##############################################################################
 """Viewlet metadconfigure
 """
-__docformat__ = 'restructuredtext'
-
 import os
 
 from zope.security import checker
