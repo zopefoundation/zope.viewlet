@@ -4,7 +4,7 @@ Changes
 4.0.0 (unreleased)
 ------------------
 
-- Add support for PyPy.
+- Add support for PyPy and PyPy3.
 
 - Add support for Python 3.4.
 
