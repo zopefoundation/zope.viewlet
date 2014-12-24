@@ -73,7 +73,7 @@ setup(name='zope.viewlet',
             ]),
       install_requires=[
           'setuptools',
-          'zope.browserpage>=3.10.1',
+          'zope.browserpage',
           'zope.component',
           'zope.configuration',
           'zope.contentprovider',
