@@ -88,6 +88,9 @@ But now we register some viewlets for the manager
   ...
   ...     def render(self):
   ...         return u'<div class="box">It is sunny today!</div>'
+  ...
+  ...     def __repr__(self):
+  ...         return '<WeatherBox object at %x>' % id(self)
 
   >>> # Create a security checker for viewlets.
   >>> from zope.security.checker import NamesChecker, defineChecker
