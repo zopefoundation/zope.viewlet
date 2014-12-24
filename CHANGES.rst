@@ -1,53 +1,52 @@
-=======
-CHANGES
+Changes
 =======
 
 4.0.0a2 (unreleased)
 --------------------
 
-- Nothing changed yet.
+- Add support for testing on Travis.
 
 
 4.0.0a1 (2013-02-24)
 --------------------
 
-- Added support for Python 3.3.
+- Add support for Python 3.3.
 
-- Replaced deprecated ``zope.component.adapts`` usage with equivalent
+- Replace deprecated ``zope.component.adapts`` usage with equivalent
   ``zope.component.adapter`` decorator.
 
-- Replaced deprecated ``zope.interface.implements`` usage with equivalent
+- Replace deprecated ``zope.interface.implements`` usage with equivalent
   ``zope.interface.implementer`` decorator.
 
-- Dropped support for Python 2.4 and 2.5.
+- Drop support for Python 2.4 and 2.5.
 
 
 3.7.2 (2010-05-25)
 ------------------
 
-- Fixed unit tests broken under Python 2.4 by the switch to the standard
+- Fix unit tests broken under Python 2.4 by the switch to the standard
   library ``doctest`` module.
 
 
 3.7.1 (2010-04-30)
 ------------------
 
-- Removed use of 'zope.testing.doctest' in favor of stdlib's 'doctest.
+- Remove use of 'zope.testing.doctest' in favor of stdlib's 'doctest.
 
-- Fixed dubious quoting in metadirectives.py. Closes
+- Fix dubious quoting in metadirectives.py. Closes
   https://bugs.launchpad.net/zope2/+bug/143774.
 
 
 3.7.0 (2009-12-22)
 ------------------
 
-- Depend on zope.browserpage in favor of zope.app.pagetemplate.
+- Depend on ``zope.browserpage`` in favor of ``zope.app.pagetemplate``.
 
 
 3.6.1 (2009-08-29)
 ------------------
 
-- Fixed unit tests in README.txt.
+- Fix unit tests in README.txt.
 
 
 3.6.0 (2009-08-02)
@@ -63,7 +62,7 @@ CHANGES
 3.5.0 (2009-01-26)
 ------------------
 
-- Removed the dependency on `zope.app.publisher` by moving four simple helper
+- Remove the dependency on ``zope.app.publisher`` by moving four simple helper
   functions into this package and making the interface for describing the
   ZCML content provider directive explicit.
 
@@ -79,19 +78,19 @@ CHANGES
 3.4.1 (2008-01-21)
 ------------------
 
-- bugfix, implemented missing __contains__ method in IViewletManager
+- Implement missing ``__contains__`` method in IViewletManager
 
-- implemented additional viewlet managers offering weight ordered sorting
+- Implement additional viewlet managers offering weight ordered sorting
 
-- implemented additional viewlet managers offering conditional filtering
+- Implement additional viewlet managers offering conditional filtering
 
 
 3.4.1a (2007-4-22)
 ------------------
 
-- bugfix, added a missing ',' behind zope.i18nmessageid.
+- Add a missing ',' behind ``zope.i18nmessageid``.
 
-- recreated the README.txt removing everything except for the overview.
+- Recreate the ``README.txt`` removing everything except for the overview.
 
 
 3.4.0 (2007-10-10)

@@ -22,7 +22,8 @@ import os
 from setuptools import setup, find_packages
 
 def read(*rnames):
-    return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
+    with open(os.path.join(os.path.dirname(__file__), *rnames)) as f:
+        return f.read()
 
 setup(name='zope.viewlet',
       version='4.0.0a2.dev0',
@@ -30,7 +31,7 @@ setup(name='zope.viewlet',
       author_email='zope-dev@zope.org',
       description='Zope Viewlets',
       long_description=(
-          read('README.txt')
+          read('README.rst')
           + '\n\n' +
           'Detailed Documentation\n' +
           '**********************\n\n'
@@ -39,7 +40,7 @@ setup(name='zope.viewlet',
           + '\n\n' +
           read('src', 'zope', 'viewlet', 'directives.txt')
           + '\n\n' +
-          read('CHANGES.txt')
+          read('CHANGES.rst')
           ),
       keywords = "zope web html ui viewlet pattern",
       classifiers = [
