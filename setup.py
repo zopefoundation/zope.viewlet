@@ -33,9 +33,6 @@ setup(name='zope.viewlet',
       long_description=(
           read('README.rst')
           + '\n\n' +
-          'Detailed Documentation\n' +
-          '**********************\n\n'
-          + '\n\n' +
           read('src', 'zope', 'viewlet', 'README.txt')
           + '\n\n' +
           read('src', 'zope', 'viewlet', 'directives.txt')

@@ -1,6 +1,8 @@
-================================
+Viewlet-related ZCML Directives
+===============================
+
 The ``viewletManager`` Directive
-================================
+--------------------------------
 
 The ``viewletManager`` directive allows you to quickly register a new viewlet
 manager without worrying about the details of the ``adapter``
@@ -189,9 +191,8 @@ Finally, if a non-existent template is specified, an error is raised:
       ConfigurationError: ('No such file', '...foo.pt')
 
 
-=========================
 The ``viewlet`` Directive
-=========================
+-------------------------
 
 Now that we have a viewlet manager, we have to register some viewlets for
 it. The ``viewlet`` directive is similar to the ``viewletManager`` directive,
@@ -334,7 +335,7 @@ specification of any number of keyword arguments:
 
 
 Error Scenarios
----------------
+~~~~~~~~~~~~~~~
 
 Neither the class or template have been specified:
 
@@ -392,7 +393,7 @@ specified attribute:
 
 
 Cleanup
--------
+~~~~~~~
 
   >>> import shutil
   >>> shutil.rmtree(temp_dir)
