@@ -32,6 +32,7 @@ class ViewletManagerBase(object):
     A generic manager class which can be instantiated
     """
     template = None
+    viewlets = None
 
     def __init__(self, context, request, view):
         self.__updated = False
@@ -49,14 +50,14 @@ class ViewletManagerBase(object):
         # If the viewlet was not found, then raise a lookup error
         if viewlet is None:
             raise zope.component.interfaces.ComponentLookupError(
-                'No provider with name `%s` found.' %name)
+                'No provider with name `%s` found.' % name)
 
         # If the viewlet cannot be accessed, then raise an
         # unauthorized error
         if not zope.security.canAccess(viewlet, 'render'):
             raise zope.security.interfaces.Unauthorized(
                 'You are not authorized to access the provider '
-                'called `%s`.' %name)
+                'called `%s`.' % name)
 
         # Return the viewlet.
         return viewlet
@@ -102,7 +103,7 @@ class ViewletManagerBase(object):
         viewlets = self.filter(viewlets)
         viewlets = self.sort(viewlets)
         # Just use the viewlets from now on
-        self.viewlets=[]
+        self.viewlets = []
         for name, viewlet in viewlets:
             if ILocation.providedBy(viewlet):
                 viewlet.__name__ = name
@@ -120,8 +121,7 @@ class ViewletManagerBase(object):
         # Now render the view
         if self.template:
             return self.template(viewlets=self.viewlets)
-        else:
-            return u'\n'.join([viewlet.render() for viewlet in self.viewlets])
+        return u'\n'.join([viewlet.render() for viewlet in self.viewlets])
 
 
 def ViewletManager(name, interface, template=None, bases=()):
@@ -137,14 +137,14 @@ def ViewletManager(name, interface, template=None, bases=()):
                 interfaces.IViewletManager.implementedBy(bases[0])):
             bases = bases + (ViewletManagerBase,)
 
-    ViewletManager = type(
+    ViewletManagerCls = type(
         '<ViewletManager providing %s>' % interface.getName(), bases, attrDict)
-    zope.interface.classImplements(ViewletManager, interface)
-    return ViewletManager
+    zope.interface.classImplements(ViewletManagerCls, interface)
+    return ViewletManagerCls
 
 
 def getWeight(item):
-    name, viewlet = item
+    _name, viewlet = item
     try:
         return int(viewlet.weight)
     except AttributeError:
@@ -162,10 +162,9 @@ class WeightOrderedViewletManager(ViewletManagerBase):
         # do not render a manager template if no viewlets are avaiable
         if not self.viewlets:
             return u''
-        elif self.template:
+        if self.template:
             return self.template(viewlets=self.viewlets)
-        else:
-            return u'\n'.join([viewlet.render() for viewlet in self.viewlets])
+        return u'\n'.join([viewlet.render() for viewlet in self.viewlets])
 
 
 def isAvailable(viewlet):
@@ -185,4 +184,3 @@ class ConditionalViewletManager(WeightOrderedViewletManager):
         """
         return [(name, viewlet) for name, viewlet in viewlets
                 if isAvailable(viewlet)]
-
