@@ -42,9 +42,9 @@ def setUp(test):
     from zope.traversing.interfaces import ITraversable
     from zope.traversing.namespace import resource
     zope.component.provideAdapter(
-        resource, (None,), ITraversable, name = "resource")
+        resource, (None,), ITraversable, name="resource")
     zope.component.provideAdapter(
-        resource, (None, None), ITraversable, name = "resource")
+        resource, (None, None), ITraversable, name="resource")
 
     from zope.browserpage import metaconfigure
     from zope.contentprovider import tales
@@ -82,20 +82,21 @@ def test_suite():
 
     return unittest.TestSuite((
         doctest.DocFileSuite(
-                'README.txt',
-                setUp=setUp, tearDown=tearDown,
-                optionflags=flags, checker=checker,
-                globs = {'__file__': os.path.join(
-                        os.path.dirname(__file__), 'README.txt')}
-                ),
+            'README.rst',
+            setUp=setUp, tearDown=tearDown,
+            optionflags=flags, checker=checker,
+            globs={
+                '__file__': os.path.join(
+                    os.path.dirname(__file__), 'README.rst')}
+        ),
         doctest.DocFileSuite(
-                'directives.txt',
-                setUp=directivesSetUp, tearDown=directivesTearDown,
-                optionflags=flags, checker=checker,
-                globs = {'__file__': os.path.join(
-                        os.path.dirname(__file__), 'directives.txt')}
-                ),
-        ))
+            'directives.rst',
+            setUp=directivesSetUp, tearDown=directivesTearDown,
+            optionflags=flags, checker=checker,
+            globs={'__file__': os.path.join(
+                os.path.dirname(__file__), 'directives.rst')}
+        ),
+    ))
 
 if __name__ == '__main__':
     unittest.main(defaultTest='test_suite')
