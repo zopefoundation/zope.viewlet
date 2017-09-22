@@ -112,7 +112,7 @@ def viewletDirective(
             raise ConfigurationError(
                 "Attribute and template cannot be used together.")
 
-        # Note: The previous logic forbids this condition to evere occur.
+        # Note: The previous logic forbids this condition from occurring.
         assert class_, "A class must be provided if attribute is used"
 
     # Make sure that the template exists and that all low-level API methods
