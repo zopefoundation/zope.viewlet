@@ -1,5 +1,6 @@
-Viewlets and Viewlet Managers
-=============================
+===============================
+ Viewlets and Viewlet Managers
+===============================
 
 Let's start with some motivation. Using content providers allows us to insert
 one piece of HTML content. In most Web development, however, you are often
@@ -10,7 +11,7 @@ register content for those regions.
 
 
 Design Notes
-------------
+============
 
 As mentioned above, besides inserting snippets of HTML at places, we more
 frequently want to define a region in our page and allow specialized content
@@ -31,7 +32,7 @@ framework for building pluggable user interfaces.
 
 
 The Viewlet Manager
--------------------
+===================
 
 In this implementation of viewlets, those regions are just content providers
 called viewlet managers that manage a special type of content providers known
@@ -210,7 +211,7 @@ If the viewlet is not found, then the expected behavior is provided:
   True
 
 Customizing the default Viewlet Manager
----------------------------------------
+=======================================
 
 One important feature of any viewlet manager is to be able to filter and sort
 the viewlets it is displaying. The default viewlet manager that we have been
@@ -276,7 +277,7 @@ Of course, we also can remove a shown viewlet:
 
 
 WeightOrderedViewletManager
----------------------------
+===========================
 
 The weight ordered viewlet manager offers ordering viewlets by a additional
 weight argument. Viewlets which doesn't provide a weight attribute will get
@@ -377,7 +378,7 @@ And check the order:
 
 
 ConditionalViewletManager
--------------------------
+=========================
 
 The conditional ordered viewlet manager offers ordering viewlets by a
 additional weight argument and filters by the available attribute if a
@@ -485,7 +486,7 @@ And check the order:
 
 
 Viewlet Base Classes
---------------------
+====================
 
 To make the creation of viewlets simpler, a set of useful base classes and
 helper functions are provided.
@@ -691,10 +692,10 @@ There is also a bundle viewlet for CSS links:
 
 
 A Complex Example
------------------
+=================
 
 The Data
-~~~~~~~~
+--------
 
 So far we have only demonstrated simple (maybe overly trivial) use cases of
 the viewlet system. In the following example, we are going to develop a
@@ -744,7 +745,7 @@ Here is some sample data:
 
 
 The View
-~~~~~~~~
+--------
 
 The contents view of the container should iterate through the container and
 represent the files in a table:
@@ -765,7 +766,7 @@ represent the files in a table:
 
 
 The Viewlet Manager
-~~~~~~~~~~~~~~~~~~~
+-------------------
 
 Now we have to write our own viewlet manager. In this case we cannot use the
 default implementation, since the viewlets will be looked up for each
@@ -845,7 +846,7 @@ Since we have not defined any viewlets yet, the table is totally empty:
 
 
 The Viewlets and the Final Result
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---------------------------------
 
 Now let's create a first viewlet for the manager...
 
@@ -1025,7 +1026,7 @@ the result will be
 
 
 Supporting Sorting
-~~~~~~~~~~~~~~~~~~
+------------------
 
 Oftentimes you also want to batch and sort the entries in a table. Since those
 two features are not part of the view logic, they should be treated with
@@ -1209,7 +1210,7 @@ room for extending this example:
 
 
 Cleanup
--------
+=======
 
   >>> import shutil
   >>> shutil.rmtree(temp_dir)

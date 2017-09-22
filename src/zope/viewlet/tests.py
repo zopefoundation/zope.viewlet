@@ -24,6 +24,59 @@ from zope.component import eventtesting
 from zope.traversing.testing import setUp as traversingSetUp
 from zope.testing import cleanup, renormalizing
 
+from zope.viewlet import manager as managers
+
+class TestWeightOrderedViewletManager(unittest.TestCase):
+
+    def test_render_no_viewlets(self):
+        manager = managers.WeightOrderedViewletManager(None, None, None)
+        self.assertEqual(u'', manager.render())
+
+    def test_render_with_template(self):
+        manager = managers.WeightOrderedViewletManager(None, None, None)
+        manager.template = lambda viewlets: viewlets
+        manager.viewlets = self
+
+        self.assertIs(self, manager.render())
+
+    def test_render_without_template(self):
+        manager = managers.WeightOrderedViewletManager(None, None, None)
+
+        class Viewlet(object):
+            def render(self):
+                return u"Hi"
+
+        manager.viewlets = [Viewlet(), Viewlet()]
+
+        self.assertEqual(u"Hi\nHi", manager.render())
+
+
+class TestViewletManagerBase(unittest.TestCase):
+
+    def test_unauthorized(self):
+        from zope.security.interfaces import Unauthorized
+        import zope.security
+
+        orig_query = zope.component.queryMultiAdapter
+        orig_canAccess = zope.security.canAccess
+
+        def query(*args, **kwargs):
+            return self
+        def canAccess(*args):
+            return False
+
+        zope.component.queryMultiAdapter = query
+        self.addCleanup(lambda: setattr(zope.component, 'queryMultiAdapter', orig_query))
+        zope.security.canAccess = canAccess
+        self.addCleanup(lambda: setattr(zope.security, 'canAccess', orig_canAccess))
+
+
+        manager = managers.ViewletManagerBase(None, None, None)
+        with self.assertRaisesRegexp(Unauthorized,
+                                     "You are not authorized to access the provider"):
+
+            manager['name']
+
 checker = renormalizing.RENormalizing([
     # Python 3 unicode removed the "u".
     (re.compile("u('.*?')"),
@@ -33,7 +86,7 @@ checker = renormalizing.RENormalizing([
     ])
 
 
-def setUp(test):
+def doctestSetUp(test):
     cleanup.setUp()
     eventtesting.setUp()
     traversingSetUp()
@@ -42,15 +95,15 @@ def setUp(test):
     from zope.traversing.interfaces import ITraversable
     from zope.traversing.namespace import resource
     zope.component.provideAdapter(
-        resource, (None,), ITraversable, name = "resource")
+        resource, (None,), ITraversable, name="resource")
     zope.component.provideAdapter(
-        resource, (None, None), ITraversable, name = "resource")
+        resource, (None, None), ITraversable, name="resource")
 
     from zope.browserpage import metaconfigure
     from zope.contentprovider import tales
     metaconfigure.registerType('provider', tales.TALESProviderExpression)
 
-def tearDown(test):
+def doctestTearDown(test):
     cleanup.tearDown()
 
 class FakeModule(object):
@@ -66,36 +119,39 @@ class FakeModule(object):
             raise AttributeError(name)
 
 def directivesSetUp(test):
-    setUp(test)
+    doctestSetUp(test)
     test.globs['__name__'] = 'zope.viewlet.directives'
     sys.modules['zope.viewlet.directives'] = FakeModule(test.globs)
 
 def directivesTearDown(test):
-    tearDown(test)
+    doctestTearDown(test)
     del sys.modules[test.globs['__name__']]
     test.globs.clear()
 
 def test_suite():
-    flags = doctest.NORMALIZE_WHITESPACE | \
-            doctest.ELLIPSIS | \
-            doctest.IGNORE_EXCEPTION_DETAIL
+    flags = (doctest.NORMALIZE_WHITESPACE
+             | doctest.ELLIPSIS
+             | doctest.IGNORE_EXCEPTION_DETAIL)
 
-    return unittest.TestSuite((
+    suite = unittest.defaultTestLoader.loadTestsFromName(__name__)
+    suite.addTests((
         doctest.DocFileSuite(
-                'README.txt',
-                setUp=setUp, tearDown=tearDown,
-                optionflags=flags, checker=checker,
-                globs = {'__file__': os.path.join(
-                        os.path.dirname(__file__), 'README.txt')}
-                ),
+            'README.rst',
+            setUp=doctestSetUp, tearDown=doctestTearDown,
+            optionflags=flags, checker=checker,
+            globs={
+                '__file__': os.path.join(
+                    os.path.dirname(__file__), 'README.rst')}
+        ),
         doctest.DocFileSuite(
-                'directives.txt',
-                setUp=directivesSetUp, tearDown=directivesTearDown,
-                optionflags=flags, checker=checker,
-                globs = {'__file__': os.path.join(
-                        os.path.dirname(__file__), 'directives.txt')}
-                ),
-        ))
+            'directives.rst',
+            setUp=directivesSetUp, tearDown=directivesTearDown,
+            optionflags=flags, checker=checker,
+            globs={'__file__': os.path.join(
+                os.path.dirname(__file__), 'directives.rst')}
+        ),
+    ))
+    return suite
 
 if __name__ == '__main__':
     unittest.main(defaultTest='test_suite')

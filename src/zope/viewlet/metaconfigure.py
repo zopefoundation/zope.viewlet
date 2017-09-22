@@ -26,10 +26,10 @@ from zope.component.interface import provideInterface
 from zope.viewlet import viewlet, manager, interfaces
 
 def viewletManagerDirective(
-    _context, name, permission,
-    for_=Interface, layer=IDefaultBrowserLayer, view=IBrowserView,
-    provides=interfaces.IViewletManager, class_=None, template=None,
-    allowed_interface=None, allowed_attributes=None):
+        _context, name, permission,
+        for_=Interface, layer=IDefaultBrowserLayer, view=IBrowserView,
+        provides=interfaces.IViewletManager, class_=None, template=None,
+        allowed_interface=None, allowed_attributes=None):
 
     # A list of attributes available under the provided permission
     required = {}
@@ -82,19 +82,19 @@ def viewletManagerDirective(
 
     # register a viewlet manager
     _context.action(
-        discriminator = ('viewletManager', for_, layer, view, name),
-        callable = zcml.handler,
-        args = ('registerAdapter',
-                new_class, (for_, layer, view), provides, name,
-                 _context.info),)
+        discriminator=('viewletManager', for_, layer, view, name),
+        callable=zcml.handler,
+        args=('registerAdapter',
+              new_class, (for_, layer, view), provides, name,
+              _context.info),)
 
 
 def viewletDirective(
-    _context, name, permission,
-    for_=Interface, layer=IDefaultBrowserLayer, view=IBrowserView,
-    manager=interfaces.IViewletManager, class_=None, template=None,
-    attribute='render', allowed_interface=None, allowed_attributes=None,
-    **kwargs):
+        _context, name, permission,
+        for_=Interface, layer=IDefaultBrowserLayer, view=IBrowserView,
+        manager=interfaces.IViewletManager, class_=None, template=None,
+        attribute='render', allowed_interface=None, allowed_attributes=None,
+        **kwargs):
 
     # Security map dictionary
     required = {}
@@ -112,10 +112,8 @@ def viewletDirective(
             raise ConfigurationError(
                 "Attribute and template cannot be used together.")
 
-        # Note: The previous logic forbids this condition to evere occur.
-        if not class_:
-            raise ConfigurationError(
-                "A class must be provided if attribute is used")
+        # Note: The previous logic forbids this condition from occurring.
+        assert class_, "A class must be provided if attribute is used"
 
     # Make sure that the template exists and that all low-level API methods
     # have the right permission.
@@ -137,11 +135,11 @@ def viewletDirective(
             new_class = viewlet.SimpleViewletClass(
                 template, bases=(class_, ), attributes=kwargs, name=name)
         else:
+            cdict = {}
             if not hasattr(class_, 'browserDefault'):
-                cdict = {'browserDefault':
-                         lambda self, request: (getattr(self, attribute), ())}
-            else:
-                cdict = {}
+                cdict = {
+                    'browserDefault': lambda self, request: (getattr(self, attribute), ())
+                }
 
             cdict['__name__'] = name
             cdict['__page_attribute__'] = attribute
@@ -178,11 +176,11 @@ def viewletDirective(
 
     # register viewlet
     _context.action(
-        discriminator = ('viewlet', for_, layer, view, manager, name),
-        callable = zcml.handler,
-        args = ('registerAdapter',
-                new_class, (for_, layer, view, manager), interfaces.IViewlet,
-                 name, _context.info),)
+        discriminator=('viewlet', for_, layer, view, manager, name),
+        callable=zcml.handler,
+        args=('registerAdapter',
+              new_class, (for_, layer, view, manager), interfaces.IViewlet,
+              name, _context.info),)
 
 def _handle_permission(_context, permission):
     if permission == 'zope.Public':
@@ -196,9 +194,9 @@ def _handle_allowed_interface(_context, allowed_interface, permission,
     if allowed_interface:
         for i in allowed_interface:
             _context.action(
-                discriminator = None,
-                callable = provideInterface,
-                args = (None, i)
+                discriminator=None,
+                callable=provideInterface,
+                args=(None, i)
                 )
 
             for name in i:
@@ -214,7 +212,7 @@ def _handle_allowed_attributes(_context, allowed_attributes, permission,
 def _handle_for(_context, for_):
     if for_ is not None:
         _context.action(
-            discriminator = None,
-            callable = provideInterface,
-            args = ('', for_)
+            discriminator=None,
+            callable=provideInterface,
+            args=('', for_)
             )

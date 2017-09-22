@@ -1,8 +1,9 @@
-Viewlet-related ZCML Directives
-===============================
+=================================
+ Viewlet-related ZCML Directives
+=================================
 
 The ``viewletManager`` Directive
---------------------------------
+================================
 
 The ``viewletManager`` directive allows you to quickly register a new viewlet
 manager without worrying about the details of the ``adapter``
@@ -192,7 +193,7 @@ Finally, if a non-existent template is specified, an error is raised:
 
 
 The ``viewlet`` Directive
--------------------------
+=========================
 
 Now that we have a viewlet manager, we have to register some viewlets for
 it. The ``viewlet`` directive is similar to the ``viewletManager`` directive,
@@ -313,6 +314,32 @@ be rendered upon calling the viewlet:
   >>> viewlet.render()
   u'SRC $5.19'
 
+If the class mentions that it implements any interfaces using the
+old-fashioned style, the resulting viewlet will
+implement ``IBrowserPublisher``:
+
+  >>> from zope.publisher.interfaces.browser import IBrowserPublisher
+  >>> from zope.interface import classImplements
+  >>> Stock.__implements__ = ()
+  >>> context = xmlconfig.string('''
+  ... <configure xmlns="http://namespaces.zope.org/browser" i18n_domain="zope">
+  ...   <viewlet
+  ...       name="stock"
+  ...       for="*"
+  ...       manager="zope.viewlet.directives.ILeftColumn"
+  ...       class="zope.viewlet.directives.Stock"
+  ...       attribute="getStockTicker"
+  ...       permission="zope.Public"
+  ...       />
+  ... </configure>
+  ... ''', context=context)
+
+  >>> viewlet = zope.component.getMultiAdapter(
+  ...     (content, request, view, manager), interfaces.IViewlet,
+  ...     name='stock')
+  >>> IBrowserPublisher.providedBy(viewlet)
+  True
+
 A final feature the ``viewlet`` directive is that it supports the
 specification of any number of keyword arguments:
 
@@ -335,7 +362,7 @@ specification of any number of keyword arguments:
 
 
 Error Scenarios
-~~~~~~~~~~~~~~~
+---------------
 
 Neither the class or template have been specified:
 
@@ -392,8 +419,28 @@ specified attribute:
     ConfigurationError: The provided class doesn't have the specified attribute
 
 
+Now for a template that doesn't exist:
+
+  >>> context = xmlconfig.string('''
+  ... <configure xmlns="http://namespaces.zope.org/browser" i18n_domain="zope">
+  ...   <viewlet
+  ...       name="weather2"
+  ...       for="*"
+  ...       manager="zope.viewlet.directives.ILeftColumn"
+  ...       template="this template is not here"
+  ...       class="zope.viewlet.directives.Weather"
+  ...       permission="zope.Public"
+  ...       />
+  ... </configure>
+  ... ''', context=context)
+  Traceback (most recent call last):
+  ...
+  ZopeXMLConfigurationError: File "<string>", line 3.2-10.8
+    ConfigurationError: ('No such file', '...this template is not here')
+
+
 Cleanup
-~~~~~~~
+-------
 
   >>> import shutil
   >>> shutil.rmtree(temp_dir)
