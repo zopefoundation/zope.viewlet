@@ -105,9 +105,16 @@ class ResourceViewletBase(object):
 
     def getURL(self):
         """
-        Lookup the resource from our path using the
-        :class:`++resource++ namespace <zope.traversing.namespace.resource>`
-        and call it, returning the results.
+        Retrieve the resource for our path using the
+        :class:`++resource++ namespace
+        <zope.traversing.namespace.resource>` and call it, returning
+        the results.
+
+        Commonly, the found resource will be an
+        :class:`zope.browserresource.interfaces.IResource`, which,
+        when called, will adapt itself to
+        :class:`zope.traversing.browser.interfaces.IAbsoluteURL` and return
+        the string value of the absolute URL.
         """
         resource = api.traverse(self.context, '++resource++' + self._path,
                                 request=self.request)
@@ -168,7 +175,7 @@ class ResourceBundleViewletBase(object):
 
     def getResources(self):
         """
-        Lookup all the resources in our desired paths using the
+        Retrieve all the resources in our desired paths using the
         :class:`++resource++ namespace <zope.traversing.namespace.resource>`
         """
         resources = []
@@ -212,9 +219,15 @@ class CSSResourceBundleViewletBase(object):
 
     def getResources(self):
         """
-        Lookup all the resources for our desired items' paths using the
-        :class:`++resource++ namespace <zope.traversing.namespace.resource>`
-        and return a list of dictionaries.
+        Retrieve all the resources for our desired items' paths using
+        the :class:`++resource++ namespace
+        <zope.traversing.namespace.resource>` and return a list of
+        dictionaries.
+
+        The dictionaries are like those passed to the constructor with
+        the defaults filled in, except that ``path`` has been replaced
+        with ``url``.  The ``url`` object is as described for
+        `ResourceViewletBase.getURL`.
         """
         resources = []
         append = resources.append

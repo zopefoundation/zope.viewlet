@@ -220,7 +220,7 @@ class WeightOrderedViewletManager(ViewletManagerBase):
         """
         Sort the viewlets based on their ``weight`` attribute (if present;
         viewlets without a ``weight`` are sorted at the beginning but are
-        otherwise  unordered).
+        otherwise unordered).
         """
         return sorted(viewlets, key=getWeight)
 

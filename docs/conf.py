@@ -276,6 +276,7 @@ intersphinx_mapping = {
     'https://zopecontentprovider.readthedocs.io/en/latest/': None,
     'https://zopesecurity.readthedocs.io/en/latest/': None,
     'https://zopetraversing.readthedocs.io/en/latest/': None,
+    'https://zopebrowserresource.readthedocs.io/en/latest/': None,
 }
 
 autodoc_default_flags = ['members', 'show-inheritance']

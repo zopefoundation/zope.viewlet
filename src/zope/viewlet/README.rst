@@ -631,7 +631,7 @@ absolute URL for it:
 
 
 There is also a :obj:`javascript viewlet base class
-<.JavaScriptBundleViewlet>` which knows how to render more then one
+<.JavaScriptBundleViewlet>` which knows how to render more than one
 javascript resource file:
 
   >>> class JSSecondResource(object):
