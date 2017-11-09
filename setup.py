@@ -39,10 +39,6 @@ setup(name='zope.viewlet',
       long_description=(
           read('README.rst')
           + '\n\n' +
-          read('src', 'zope', 'viewlet', 'README.rst')
-          + '\n\n' +
-          read('src', 'zope', 'viewlet', 'directives.rst')
-          + '\n\n' +
           read('CHANGES.rst')
       ),
       keywords="zope web html ui viewlet pattern",
@@ -72,6 +68,10 @@ setup(name='zope.viewlet',
       namespace_packages=['zope'],
       extras_require={
           'test': TESTS_REQUIRE,
+          'docs': [
+              'Sphinx',
+              'repoze.sphinx.autointerface',
+          ],
       },
       install_requires=[
           'setuptools',

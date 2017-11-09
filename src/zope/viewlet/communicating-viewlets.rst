@@ -18,7 +18,7 @@ The viewlets
 
 For the purpose of this example, we simulate a search form. Our search results
 are simply the characters of the search term and are stored on the viewlet as
-an attribute:
+an attribute::
 
 
     class ISearchForm(zope.interface.Interface):
@@ -54,7 +54,7 @@ form.
 
 We'll store the search form viewlet's ID as an attribute of the result list
 viewlet. Let's hard-code the ID for a start, then the result list looks like
-this:
+this::
 
 
     class ResultList(zope.viewlet.viewlet.ViewletBase):
@@ -78,6 +78,8 @@ Registering the viewlets
 As long as we treat the ID of the search form as hard-coded, we have to use
 the correct name when registering the two viewlets:
 
+.. code-block:: xml
+
 
     <viewlet
        name="searchform"
@@ -98,6 +100,7 @@ which will be available as attributes of the ResultList objects. The attribute
 that holds our search form's ID is searchform_id, so we might register the
 viewlets like this:
 
+.. code-block:: xml
 
     <viewlet
        name="sitesearch"

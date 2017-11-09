@@ -11,7 +11,8 @@
 # FOR A PARTICULAR PURPOSE.
 #
 ##############################################################################
-"""Viewlet implementation
+"""
+Viewlet implementations.
 """
 __docformat__ = 'restructuredtext'
 
@@ -45,7 +46,14 @@ class ViewletBase(BrowserView):
 
 
 class SimpleAttributeViewlet(ViewletBase):
-    """A viewlet that uses a specified method to produce its content."""
+    """
+    A viewlet that uses a method named in :attr:`__page_attribute__`
+    to produce its content.
+    """
+
+    #: The name of the attribute of this object that will be used
+    #: in `render` to produce our content. Must not be set to ``"render"``.
+    __page_attribute__ = None
 
     def render(self, *args, **kw):
         # If a class doesn't provide it's own call, then get the attribute
@@ -96,6 +104,11 @@ class ResourceViewletBase(object):
     _path = None
 
     def getURL(self):
+        """
+        Lookup the resource from our path using the
+        :class:`++resource++ namespace <zope.traversing.namespace.resource>`
+        and call it, returning the results.
+        """
         resource = api.traverse(self.context, '++resource++' + self._path,
                                 request=self.request)
         return resource()
@@ -110,8 +123,8 @@ def JavaScriptViewlet(path):
 
     klass = type('JavaScriptViewlet',
                  (ResourceViewletBase, ViewletBase),
-                  {'index': ViewPageTemplateFile(src),
-                   '_path': path})
+                 {'index': ViewPageTemplateFile(src),
+                  '_path': path})
 
     return klass
 
@@ -134,10 +147,10 @@ def CSSViewlet(path, media="all", rel="stylesheet"):
 
     klass = type('CSSViewlet',
                  (CSSResourceViewletBase, ViewletBase),
-                  {'index': ViewPageTemplateFile(src),
-                   '_path': path,
-                   '_media':media,
-                   '_rel':rel})
+                 {'index': ViewPageTemplateFile(src),
+                  '_path': path,
+                  '_media':media,
+                  '_rel':rel})
 
     return klass
 
@@ -149,12 +162,20 @@ class ResourceBundleViewletBase(object):
     """
     _paths = None
 
+    #: A callable (usually a template) that is used to implement
+    #: the `render` method.
+    index = None
+
     def getResources(self):
+        """
+        Lookup all the resources in our desired paths using the
+        :class:`++resource++ namespace <zope.traversing.namespace.resource>`
+        """
         resources = []
         append = resources.append
         for path in self._paths:
             append(api.traverse(self.context, '++resource++' + path,
-                request=self.request))
+                                request=self.request))
         return resources
 
     def render(self, *args, **kw):
@@ -163,13 +184,12 @@ class ResourceBundleViewletBase(object):
 
 def JavaScriptBundleViewlet(paths):
     """Create a viewlet that can simply insert javascript links."""
-    src = os.path.join(os.path.dirname(__file__), 
-        'javascript_bundle_viewlet.pt')
+    src = os.path.join(os.path.dirname(__file__), 'javascript_bundle_viewlet.pt')
 
     klass = type('JavaScriptBundleViewlet',
                  (ResourceBundleViewletBase, ViewletBase),
-                  {'index': ViewPageTemplateFile(src),
-                   '_paths': paths})
+                 {'index': ViewPageTemplateFile(src),
+                  '_paths': paths})
 
     return klass
 
@@ -177,26 +197,32 @@ def JavaScriptBundleViewlet(paths):
 class CSSResourceBundleViewletBase(object):
     """A simple viewlet for inserting css references to different resources.
 
-    There is a tuple or list of dict used for the different resource 
-    descriptions. The list of dict uses the following format:
-    
+    There is a sequence of dict used for the different resource
+    descriptions. The sequence uses the following format:
+
     ({path:'the path', media:'all', rel:'stylesheet'},...)
-    
+
     The default values for media is ``all`` and the default value for rel is
-    ``stylesheet``. The path must be set there is no default value for the 
+    ``stylesheet``. The path must be set there is no default value for the
     path attribute.
-    
+
     This is an abstract class that is expected to be used as a base only.
     """
     _items = None
 
     def getResources(self):
+        """
+        Lookup all the resources for our desired items' paths using the
+        :class:`++resource++ namespace <zope.traversing.namespace.resource>`
+        and return a list of dictionaries.
+        """
         resources = []
         append = resources.append
         for item in self._items:
             info = {}
-            info['url'] = api.traverse(self.context, 
-                '++resource++' + item.get('path'), request=self.request)
+            info['url'] = api.traverse(self.context,
+                                       '++resource++' + item.get('path'),
+                                       request=self.request)
             info['media'] = item.get('media', 'all')
             info['rel'] = item.get('rel', 'stylesheet')
             append(info)
@@ -207,13 +233,16 @@ class CSSResourceBundleViewletBase(object):
 
 
 def CSSBundleViewlet(items):
-    """Create a viewlet that can simply insert css links."""
-    src = os.path.join(os.path.dirname(__file__), 
-        'css_bundle_viewlet.pt')
+    """
+    Create a viewlet that can simply insert css links.
+
+    :param items: A sequence of dictionaries as described in `CSSResourceBundleViewletBase`.
+    """
+    src = os.path.join(os.path.dirname(__file__), 'css_bundle_viewlet.pt')
 
     klass = type('CSSBundleViewlet',
                  (CSSResourceBundleViewletBase, ViewletBase),
-                  {'index': ViewPageTemplateFile(src),
-                   '_items': items})
+                 {'index': ViewPageTemplateFile(src),
+                  '_items': items})
 
     return klass
