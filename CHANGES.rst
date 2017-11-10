@@ -5,7 +5,7 @@
 4.1.1 (unreleased)
 ==================
 
-- Nothing changed yet.
+- Host documentation at https://zopeviewlet.readthedocs.io
 
 
 4.1.0 (2017-09-23)

@@ -29,9 +29,16 @@ from zope.contentprovider.interfaces import BeforeUpdateEvent
 class ViewletManagerBase(object):
     """The Viewlet Manager Base
 
-    A generic manager class which can be instantiated
+    A generic manager class which can be instantiated.
     """
+
+    #: A callable that will be used by `render`, if present,
+    #: to produce the output. It will be passed the list of viewlets
+    #: in the *viewlets* keyword argument.
     template = None
+
+    #: A list of active viewlets for the current manager.
+    #: Populated by `update`.
     viewlets = None
 
     def __init__(self, context, request, view):
@@ -41,7 +48,12 @@ class ViewletManagerBase(object):
         self.request = request
 
     def __getitem__(self, name):
-        """See zope.interface.common.mapping.IReadMapping"""
+        """
+        Return a viewlet for this object having the given
+        name.
+
+        This takes into account security.
+        """
         # Find the viewlet
         viewlet = zope.component.queryMultiAdapter(
             (self.context, self.request, self.__parent__, self),
@@ -63,7 +75,14 @@ class ViewletManagerBase(object):
         return viewlet
 
     def get(self, name, default=None):
-        """See zope.interface.common.mapping.IReadMapping"""
+        """
+        Return a viewlet registered for this object having
+        the given name.
+
+        This takes into account security.
+
+        If no such viewlet can be found, returns *default*.
+        """
         try:
             return self[name]
         except (zope.component.interfaces.ComponentLookupError,
@@ -75,9 +94,18 @@ class ViewletManagerBase(object):
         return bool(self.get(name, False))
 
     def filter(self, viewlets):
-        """Sort out all content providers
+        """
+        Filter *viewlets* down from all available viewlets to just the
+        currently desired set.
 
-        ``viewlets`` is a list of tuples of the form (name, viewlet).
+        :param list viewlets: a list of tuples of the form ``(name,
+            viewlet)``.
+
+        :return: A list of the available viewlets in the form ``(name,
+            viewlet)``.  By default, this method checks with
+            `zope.security.checker.canAccess` to see if the
+            ``render`` method of a viewlet can be used to
+            determine availability.
         """
         # Only return viewlets accessible to the principal
         return [(name, viewlet) for name, viewlet in viewlets
@@ -92,7 +120,23 @@ class ViewletManagerBase(object):
         return sorted(viewlets, key=lambda x: x[0])
 
     def update(self):
-        """See zope.contentprovider.interfaces.IContentProvider"""
+        """
+        Update the viewlet manager for rendering.
+
+        This method is part of the protocol of a content provider, called before
+        :meth:`render`. This implementation will use it to:
+
+        1. Find the total set of available viewlets by querying for viewlet adapters.
+        2. Filter the total set down to the active set by using :meth:`filter`.
+        3. Sort the active set using :meth:`sort`.
+        4. Provide viewlets that implement :class:`~zope.location.interfaces.ILocation`
+           with a name.
+        5. Set :attr:`viewlets` to the found set of active viewlets.
+        6. Fire :class:`.BeforeUpdateEvent` for each active viewlet before calling ``update()``
+           on it.
+
+        ..  seealso:: :class:`zope.contentprovider.interfaces.IContentProvider`
+        """
         self.__updated = True
 
         # Find all content providers for the region
@@ -117,7 +161,17 @@ class ViewletManagerBase(object):
             viewlet.update()
 
     def render(self):
-        """See zope.contentprovider.interfaces.IContentProvider"""
+        """
+        Render the active viewlets.
+
+        If a :attr:`template` has been provided, call the template to
+        render. Otherwise, call each viewlet in order to render.
+
+        .. note:: If a :attr:`template` is provided, it will be called
+           even if there are no :attr:`viewlets`.
+
+        ..  seealso:: :class:`zope.contentprovider.interfaces.IContentProvider`
+        """
         # Now render the view
         if self.template:
             return self.template(viewlets=self.viewlets)
@@ -125,6 +179,14 @@ class ViewletManagerBase(object):
 
 
 def ViewletManager(name, interface, template=None, bases=()):
+    """
+    Create and return a new viewlet manager class that implements
+    :class:`zope.viewlet.interfaces.IViewletManager`.
+
+    :param str name: The name of the generated class.
+    :param interface: The additional interface the class will implement.
+    :keyword tuple bases: The base classes to extend.
+    """
 
     attrDict = {'__name__' : name}
     if template is not None:
@@ -155,16 +217,23 @@ class WeightOrderedViewletManager(ViewletManagerBase):
     """Weight ordered viewlet managers."""
 
     def sort(self, viewlets):
+        """
+        Sort the viewlets based on their ``weight`` attribute (if present;
+        viewlets without a ``weight`` are sorted at the beginning but are
+        otherwise unordered).
+        """
         return sorted(viewlets, key=getWeight)
 
     def render(self):
-        """See zope.contentprovider.interfaces.IContentProvider"""
+        """
+        Just like :meth:`ViewletManagerBase`, except that if there are no
+        active viewlets in :attr:`viewlets`, we will not attempt to render
+        the template.
+        """
         # do not render a manager template if no viewlets are avaiable
         if not self.viewlets:
             return u''
-        if self.template:
-            return self.template(viewlets=self.viewlets)
-        return u'\n'.join([viewlet.render() for viewlet in self.viewlets])
+        return ViewletManagerBase.render(self)
 
 
 def isAvailable(viewlet):
@@ -178,9 +247,11 @@ class ConditionalViewletManager(WeightOrderedViewletManager):
     """Conditional weight ordered viewlet managers."""
 
     def filter(self, viewlets):
-        """Sort out all viewlets which are explicit not available
+        """
+        Sort out all viewlets which are explicity not available
+        based on the value of their ``available`` attribute (viewlets without
+        this attribute are considered available).
 
-        ``viewlets`` is a list of tuples of the form (name, viewlet).
         """
         return [(name, viewlet) for name, viewlet in viewlets
                 if isAvailable(viewlet)]

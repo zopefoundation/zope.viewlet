@@ -34,14 +34,19 @@ framework for building pluggable user interfaces.
 The Viewlet Manager
 ===================
 
-In this implementation of viewlets, those regions are just content providers
-called viewlet managers that manage a special type of content providers known
-as viewlets. Every viewlet manager handles the viewlets registered for it:
+In this implementation of viewlets, those regions are just
+:class:`content providers
+<zope.contentprovider.interfaces.IContentProvider>` called
+:class:`viewlet managers <zope.viewlet.interfaces.IViewletManager>`
+that manage a special type of content providers known as
+:class:`viewlets <zope.viewlet.interfaces.IViewlet>`.
+Every viewlet manager handles the viewlets registered for it:
 
   >>> class ILeftColumn(interfaces.IViewletManager):
   ...     """Viewlet manager located in the left column."""
 
-You can then create a viewlet manager using this interface now:
+You can then create :obj:`a viewlet manager <.ViewletManager>` using
+this interface now:
 
   >>> from zope.viewlet import manager
   >>> LeftColumn = manager.ViewletManager('left', ILeftColumn)
@@ -72,7 +77,8 @@ So initially nothing gets rendered:
   >>> leftColumn.render()
   u''
 
-But now we register some viewlets for the manager
+But now we register some :class:`viewlets
+<zope.viewlet.interfaces.IViewlet>` for the manager:
 
   >>> import zope.component
   >>> from zope.publisher.interfaces.browser import IDefaultBrowserLayer
@@ -144,10 +150,10 @@ demonstrate this behaviour.
   <div class="box">Patriots (23) : Steelers (7)</div>
   <div class="box">It is sunny today!</div>
 
-But this is of course pretty lame, since there is no way of specifying how the
-viewlets are put together. But we have a solution. The second argument of the
-``ViewletManager()`` function is a template in which we can specify how the
-viewlets are put together:
+But this is of course pretty lame, since there is no way of specifying
+how the viewlets are put together. But we have a solution. The second
+argument of the :obj:`.ViewletManager` function is a template in which
+we can specify how the viewlets are put together:
 
   >>> import os, tempfile
   >>> temp_dir = tempfile.mkdtemp()
@@ -164,7 +170,7 @@ viewlets are put together:
   ...                                     template=leftColTemplate)
   >>> leftColumn = LeftColumn(content, request, view)
 
-TODO: Fix this silly thing; viewlets should be directly available.
+.. TODO: Fix this silly thing; viewlets should be directly available.
 
 As you can see, the viewlet manager provides a global ``options/viewlets``
 variable that is an iterable of all the available viewlets in the correct
@@ -177,8 +183,9 @@ order:
     <div class="box">It is sunny today!</div>
   </div>
 
-If a viewlet provides ILocation the ``__name__`` attribute of the
-viewlet is set to the name under which the viewlet is registered.
+If a viewlet provides :class:`zope.location.interfaces.ILocation` the
+``__name__`` attribute of the viewlet is set to the name under which
+the viewlet is registered.
 
   >>> [getattr(viewlet, '__name__', None) for viewlet in leftColumn.viewlets]
   [u'sport', None]
@@ -191,8 +198,8 @@ You can also lookup the viewlets directly for management purposes:
   >>> leftColumn.get('weather')
   <WeatherBox ...>
 
-The viewlet manager also provides the __contains__ method defined in
-IReadMapping:
+The viewlet manager also provides the ``__contains__`` method defined in
+:class:`zope.interface.common.mapping.IReadMapping`:
 
   >>> 'weather' in leftColumn
   True
@@ -279,9 +286,10 @@ Of course, we also can remove a shown viewlet:
 WeightOrderedViewletManager
 ===========================
 
-The weight ordered viewlet manager offers ordering viewlets by a additional
-weight argument. Viewlets which doesn't provide a weight attribute will get
-a weight of 0 (zero).
+The :class:`weight ordered viewlet manager
+<.WeightOrderedViewletManager>` offers ordering viewlets by a
+additional weight argument. Viewlets which doesn't provide a weight
+attribute will get a weight of 0 (zero).
 
 Let's define a new column:
 
@@ -380,11 +388,12 @@ And check the order:
 ConditionalViewletManager
 =========================
 
-The conditional ordered viewlet manager offers ordering viewlets by a
-additional weight argument and filters by the available attribute if a
-supported by the viewlet. Viewlets which doesn't provide a available attribute
-will not get skipped. The default weight value for viewlets which doesn't
-provide a weight attribute is 0 (zero).
+The :class:`conditional ordered viewlet manager
+<.ConditionalViewletManager>` offers ordering viewlets by a additional
+weight argument and filters by the available attribute if a supported
+by the viewlet. Viewlets which doesn't provide a available attribute
+will not get skipped. The default weight value for viewlets which
+doesn't provide a weight attribute is 0 (zero).
 
 Let's define a new column:
 
@@ -491,7 +500,7 @@ Viewlet Base Classes
 To make the creation of viewlets simpler, a set of useful base classes and
 helper functions are provided.
 
-The first class is a base class that simply defines the constructor:
+The first class is :class:`a base class <.ViewletBase>` that simply defines the constructor:
 
   >>> base = viewlet.ViewletBase('context', 'request', 'view', 'manager')
   >>> base.context
@@ -511,7 +520,7 @@ But a default ``render()`` method implementation is not provided:
   NotImplementedError: `render` method must be implemented by subclass.
 
 If you have already an existing class that produces the HTML content in some
-method, then the ``SimpleAttributeViewlet`` might be for you, since it can be
+method, then :class:`.SimpleAttributeViewlet` might be for you, since it can be
 used to convert any class quickly into a viewlet:
 
   >>> class FooViewlet(viewlet.SimpleAttributeViewlet):
@@ -520,7 +529,7 @@ used to convert any class quickly into a viewlet:
   ...     def foo(self):
   ...         return 'output'
 
-The `__page_attribute__` attribute provides the name of the function to call for
+The ``__page_attribute__`` attribute provides the name of the function to call for
 rendering.
 
   >>> foo = FooViewlet('context', 'request', 'view', 'manager')
@@ -529,7 +538,7 @@ rendering.
   >>> foo.render()
   'output'
 
-If you specify `render` as the attribute an error is raised to prevent
+If you specify ``render`` as the attribute an error is raised to prevent
 infinite recursion:
 
   >>> foo.__page_attribute__ = 'render'
@@ -547,10 +556,10 @@ The same is true if the specified attribute does not exist:
   AttributeError: 'FooViewlet' object has no attribute 'bar'
 
 To create simple template-based viewlets you can use the
-``SimpleViewletClass()`` function. This function is very similar to its view
-equivalent and is used by the ZCML directives to create viewlets. The result
-of this function call will be a fully functional viewlet class. Let's start by
-simply specifying a template only:
+:func:`.SimpleViewletClass` function. This function is very similar to
+its view equivalent and is used by the ZCML directives to create
+viewlets. The result of this function call will be a fully functional
+viewlet class. Let's start by simply specifying a template only:
 
   >>> template = os.path.join(temp_dir, 'demoTemplate.pt')
   >>> with open(template, 'w') as file:
@@ -590,11 +599,16 @@ function:
   >>> demo.__name__
   'demoViewlet'
 
-In addition to the the generic viewlet code above, the package comes with two
-viewlet base classes and helper functions for inserting CSS and Javascript
-links into HTML headers, since those two are so very common. I am only going
-to demonstrate the helper functions here, since those demonstrations will
-fully demonstrate the functionality of the base classes as well.
+CSS and JavaScript
+------------------
+
+In addition to the the generic viewlet code above, the package comes
+with two viewlet base classes and helper functions for inserting
+:obj:`CSS <.CSSViewlet>` and :obj:`Javascript links
+<.JavaScriptViewlet>` into HTML headers, since those two are so very
+common. I am only going to demonstrate the helper functions here,
+since those demonstrations will fully demonstrate the functionality of
+the base classes as well.
 
 The viewlet will look up the resource it was given and tries to produce the
 absolute URL for it:
@@ -616,8 +630,9 @@ absolute URL for it:
   <script type="text/javascript" src="/@@/resource.js"></script>
 
 
-There is also a javascript viewlet base class which knows how to render more
-then one javascript resource file:
+There is also a :obj:`javascript viewlet base class
+<.JavaScriptBundleViewlet>` which knows how to render more than one
+javascript resource file:
 
   >>> class JSSecondResource(object):
   ...     def __init__(self, request):
@@ -640,7 +655,7 @@ then one javascript resource file:
           src="/@@/second-resource.js"> </script>
 
 
-The same works for the CSS resource viewlet:
+The same works for the :obj:`CSS resource viewlet <.CSSViewlet>`:
 
   >>> class CSSResource(object):
   ...     def __init__(self, request):
@@ -666,7 +681,7 @@ You can also change the media type and the rel attribute:
   <link type="text/css" rel="css" href="/@@/resource.css"
         media="print" />
 
-There is also a bundle viewlet for CSS links:
+There is also :class:`a bundle viewlet for CSS links <.CSSBundleViewlet>`:
 
   >>> class CSSPrintResource(object):
   ...     def __init__(self, request):
