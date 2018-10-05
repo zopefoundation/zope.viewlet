@@ -5,8 +5,9 @@
 4.1.1 (unreleased)
 ==================
 
-- Host documentation at https://zopeviewlet.readthedocs.io
+- Add support for Python 3.7.
 
+- Host documentation at https://zopeviewlet.readthedocs.io
 
 4.1.0 (2017-09-23)
 ==================
