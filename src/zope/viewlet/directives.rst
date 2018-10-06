@@ -188,8 +188,8 @@ Finally, if a non-existent template is specified, an error is raised:
   ... ''', context=context)
   Traceback (most recent call last):
   ...
-  ZopeXMLConfigurationError: File "<string>", line 3.2-7.8
-      ConfigurationError: ('No such file', '...foo.pt')
+  ConfigurationError: ('No such file', '...foo.pt')
+      File "<string>", line 3.2-7.8
 
 
 The ``viewlet`` Directive
@@ -377,8 +377,8 @@ Neither the class or template have been specified:
   ... ''', context=context)
   Traceback (most recent call last):
   ...
-  ZopeXMLConfigurationError: File "<string>", line 3.2-7.8
-      ConfigurationError: Must specify a class or template
+  ConfigurationError: Must specify a class or template
+      File "<string>", line 3.2-7.8
 
 The specified attribute is not ``__call__``, but also a template has been
 specified:
@@ -396,8 +396,8 @@ specified:
   ... ''', context=context)
   Traceback (most recent call last):
   ...
-  ZopeXMLConfigurationError: File "<string>", line 3.2-9.8
-      ConfigurationError: Attribute and template cannot be used together.
+  ConfigurationError: Attribute and template cannot be used together.
+      File "<string>", line 3.2-9.8
 
 Now, we are not specifying a template, but a class that does not have the
 specified attribute:
@@ -415,9 +415,8 @@ specified attribute:
   ... ''', context=context)
   Traceback (most recent call last):
   ...
-  ZopeXMLConfigurationError: File "<string>", line 3.2-9.8
-    ConfigurationError: The provided class doesn't have the specified attribute
-
+  ConfigurationError: The provided class doesn't have the specified attribute
+      File "<string>", line 3.2-9.8
 
 Now for a template that doesn't exist:
 
@@ -435,8 +434,8 @@ Now for a template that doesn't exist:
   ... ''', context=context)
   Traceback (most recent call last):
   ...
-  ZopeXMLConfigurationError: File "<string>", line 3.2-10.8
-    ConfigurationError: ('No such file', '...this template is not here')
+  ConfigurationError: ('No such file', '...this template is not here')
+      File "<string>", line 3.2-10.8
 
 
 Cleanup
