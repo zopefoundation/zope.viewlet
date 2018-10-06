@@ -189,6 +189,7 @@ Finally, if a non-existent template is specified, an error is raised:
   Traceback (most recent call last):
   ...
   ConfigurationError: ('No such file', '...foo.pt')
+      File "<string>", line 3.2-7.8
 
 
 The ``viewlet`` Directive
@@ -377,6 +378,7 @@ Neither the class or template have been specified:
   Traceback (most recent call last):
   ...
   ConfigurationError: Must specify a class or template
+      File "<string>", line 3.2-7.8
 
 The specified attribute is not ``__call__``, but also a template has been
 specified:
@@ -395,6 +397,7 @@ specified:
   Traceback (most recent call last):
   ...
   ConfigurationError: Attribute and template cannot be used together.
+      File "<string>", line 3.2-9.8
 
 Now, we are not specifying a template, but a class that does not have the
 specified attribute:
@@ -413,7 +416,7 @@ specified attribute:
   Traceback (most recent call last):
   ...
   ConfigurationError: The provided class doesn't have the specified attribute
-
+      File "<string>", line 3.2-9.8
 
 Now for a template that doesn't exist:
 
@@ -432,6 +435,7 @@ Now for a template that doesn't exist:
   Traceback (most recent call last):
   ...
   ConfigurationError: ('No such file', '...this template is not here')
+      File "<string>", line 3.2-10.8
 
 
 Cleanup
