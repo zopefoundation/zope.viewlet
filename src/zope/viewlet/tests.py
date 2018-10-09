@@ -113,10 +113,8 @@ class FakeModule(object):
         self.__dict = dict
 
     def __getattr__(self, name):
-        try:
-            return self.__dict[name]
-        except KeyError:
-            raise AttributeError(name)
+        return self.__dict[name]
+
 
 def directivesSetUp(test):
     doctestSetUp(test)
