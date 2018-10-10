@@ -110,10 +110,7 @@ class FakeModule(object):
     """A fake module."""
 
     def __init__(self, dict):
-        self.__dict = dict
-
-    def __getattr__(self, name):
-        return self.__dict[name]
+        self.__dict__ = dict
 
 
 def directivesSetUp(test):
