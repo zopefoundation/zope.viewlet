@@ -72,8 +72,8 @@ class TestViewletManagerBase(unittest.TestCase):
 
 
         manager = managers.ViewletManagerBase(None, None, None)
-        with self.assertRaisesRegexp(Unauthorized,
-                                     "You are not authorized to access the provider"):
+        with self.assertRaisesRegex(Unauthorized,
+                                    "You are not authorized to access the provider"):
 
             manager['name']
 

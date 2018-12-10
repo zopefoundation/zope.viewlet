@@ -61,7 +61,7 @@ class ViewletManagerBase(object):
 
         # If the viewlet was not found, then raise a lookup error
         if viewlet is None:
-            raise zope.component.interfaces.ComponentLookupError(
+            raise zope.interface.interfaces.ComponentLookupError(
                 'No provider with name `%s` found.' % name)
 
         # If the viewlet cannot be accessed, then raise an
@@ -85,7 +85,7 @@ class ViewletManagerBase(object):
         """
         try:
             return self[name]
-        except (zope.component.interfaces.ComponentLookupError,
+        except (zope.interface.interfaces.ComponentLookupError,
                 zope.security.interfaces.Unauthorized):
             return default
 
