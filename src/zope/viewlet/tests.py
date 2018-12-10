@@ -28,6 +28,11 @@ from zope.viewlet import manager as managers
 
 class TestWeightOrderedViewletManager(unittest.TestCase):
 
+    # Avoid DeprecationWarning for assertRaisesRegexp on Python 3 while
+    # coping with Python 2 not having the Regex spelling variant
+    assertRaisesRegex = getattr(unittest.TestCase, 'assertRaisesRegex',
+                                unittest.TestCase.assertRaisesRegexp)
+
     def test_render_no_viewlets(self):
         manager = managers.WeightOrderedViewletManager(None, None, None)
         self.assertEqual(u'', manager.render())
