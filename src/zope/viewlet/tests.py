@@ -53,6 +53,11 @@ class TestWeightOrderedViewletManager(unittest.TestCase):
 
 class TestViewletManagerBase(unittest.TestCase):
 
+    # Avoid DeprecationWarning for assertRaisesRegexp on Python 3 while
+    # coping with Python 2 not having the Regex spelling variant
+    assertRaisesRegex = getattr(unittest.TestCase, 'assertRaisesRegex',
+                                unittest.TestCase.assertRaisesRegexp)
+
     def test_unauthorized(self):
         from zope.security.interfaces import Unauthorized
         import zope.security
@@ -72,8 +77,8 @@ class TestViewletManagerBase(unittest.TestCase):
 
 
         manager = managers.ViewletManagerBase(None, None, None)
-        with self.assertRaisesRegexp(Unauthorized,
-                                     "You are not authorized to access the provider"):
+        with self.assertRaisesRegex(Unauthorized,
+                                    "You are not authorized to access the provider"):
 
             manager['name']
 
