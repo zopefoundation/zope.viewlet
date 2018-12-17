@@ -5,7 +5,8 @@
 4.3 (unreleased)
 ================
 
-- Nothing changed yet.
+- Fix deprecation warnings.
+  (`# 11 <https://github.com/zopefoundation/zope.viewlet/pull/11>`_)
 
 
 4.2 (2018-10-09)
