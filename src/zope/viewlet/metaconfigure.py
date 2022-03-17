@@ -25,6 +25,7 @@ from zope.component import zcml
 from zope.component.interface import provideInterface
 from zope.viewlet import viewlet, manager, interfaces
 
+
 def viewletManagerDirective(
         _context, name, permission,
         for_=Interface, layer=IDefaultBrowserLayer, view=IBrowserView,
@@ -129,7 +130,7 @@ def viewletDirective(
             if not hasattr(class_, attribute):
                 raise ConfigurationError(
                     "The provided class doesn't have the specified attribute "
-                    )
+                )
         if template:
             # Create a new class for the viewlet template and class.
             new_class = viewlet.SimpleViewletClass(
@@ -138,7 +139,8 @@ def viewletDirective(
             cdict = {}
             if not hasattr(class_, 'browserDefault'):
                 cdict = {
-                    'browserDefault': lambda self, request: (getattr(self, attribute), ())
+                    'browserDefault': lambda self, request: (
+                        getattr(self, attribute), ())
                 }
 
             cdict['__name__'] = name
@@ -182,11 +184,13 @@ def viewletDirective(
               new_class, (for_, layer, view, manager), interfaces.IViewlet,
               name, _context.info),)
 
+
 def _handle_permission(_context, permission):
     if permission == 'zope.Public':
         permission = checker.CheckerPublic
 
     return permission
+
 
 def _handle_allowed_interface(_context, allowed_interface, permission,
                               required):
@@ -197,10 +201,11 @@ def _handle_allowed_interface(_context, allowed_interface, permission,
                 discriminator=None,
                 callable=provideInterface,
                 args=(None, i)
-                )
+            )
 
             for name in i:
                 required[name] = permission
+
 
 def _handle_allowed_attributes(_context, allowed_attributes, permission,
                                required):
@@ -209,10 +214,11 @@ def _handle_allowed_attributes(_context, allowed_attributes, permission,
         for name in allowed_attributes:
             required[name] = permission
 
+
 def _handle_for(_context, for_):
     if for_ is not None:
         _context.action(
             discriminator=None,
             callable=provideInterface,
             args=('', for_)
-            )
+        )

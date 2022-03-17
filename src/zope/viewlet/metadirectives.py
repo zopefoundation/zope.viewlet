@@ -13,6 +13,7 @@
 ##############################################################################
 """Viewlet metadirective
 """
+from zope.viewlet import interfaces
 __docformat__ = 'restructuredtext'
 
 import zope.configuration.fields
@@ -22,8 +23,6 @@ from zope.security.zcml import Permission
 from zope.i18nmessageid import MessageFactory
 from zope.interface import Interface
 _ = MessageFactory('zope')
-
-from zope.viewlet import interfaces
 
 
 class IContentProvider(Interface):
@@ -54,19 +53,19 @@ class IContentProvider(Interface):
     for_ = zope.configuration.fields.GlobalObject(
         title=u"The interface or class this view is for.",
         required=False
-        )
+    )
 
     permission = Permission(
         title=u"Permission",
         description=u"The permission needed to use the view.",
         required=True
-        )
+    )
 
     class_ = zope.configuration.fields.GlobalObject(
         title=_("Class"),
         description=_("A class that provides attributes used by the view."),
         required=False,
-        )
+    )
 
     layer = zope.configuration.fields.GlobalInterface(
         title=_("The layer the view is in."),
@@ -75,7 +74,7 @@ class IContentProvider(Interface):
         specific views in a layer named after the skin. If the 'layer'
         attribute is not supplied, it defaults to 'default'."""),
         required=False,
-        )
+    )
 
     allowed_interface = zope.configuration.fields.Tokens(
         title=_("Interface that is also allowed if user has permission."),
@@ -89,7 +88,7 @@ class IContentProvider(Interface):
         whitespace."""),
         required=False,
         value_type=zope.configuration.fields.GlobalInterface(),
-        )
+    )
 
     allowed_attributes = zope.configuration.fields.Tokens(
         title=_("View attributes that are also allowed if the user"
@@ -101,7 +100,7 @@ class IContentProvider(Interface):
         on the view object."""),
         required=False,
         value_type=zope.configuration.fields.PythonIdentifier(),
-        )
+    )
 
 
 class ITemplatedContentProvider(IContentProvider):
@@ -130,7 +129,7 @@ class IViewletManagerDirective(ITemplatedContentProvider):
                       "is used to lookup its contained viewlets."),
         required=False,
         default=interfaces.IViewletManager,
-        )
+    )
 
 
 class IViewletDirective(ITemplatedContentProvider):

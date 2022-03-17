@@ -24,7 +24,7 @@
 Viewlets provide a generic framework for building pluggable user
 interfaces. Viewlets are a special type of `content provider
 <https://pypi.python.org/pypi/zope.contentprovider>`_ that allows a
-template to define a region (a "viewlet manager"") into which content
+template to define a region (a "viewlet manager") into which content
 ("viewlets") can be plugged.
 
 Documentation is hosted at https://zopeviewlet.readthedocs.io/

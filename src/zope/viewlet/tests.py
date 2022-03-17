@@ -26,6 +26,7 @@ from zope.testing import cleanup, renormalizing
 
 from zope.viewlet import manager as managers
 
+
 class TestWeightOrderedViewletManager(unittest.TestCase):
 
     def test_render_no_viewlets(self):
@@ -67,20 +68,23 @@ class TestViewletManagerBase(unittest.TestCase):
 
         def query(*args, **kwargs):
             return self
+
         def canAccess(*args):
             return False
 
         zope.component.queryMultiAdapter = query
-        self.addCleanup(lambda: setattr(zope.component, 'queryMultiAdapter', orig_query))
+        self.addCleanup(
+            lambda: setattr(zope.component, 'queryMultiAdapter', orig_query))
         zope.security.canAccess = canAccess
-        self.addCleanup(lambda: setattr(zope.security, 'canAccess', orig_canAccess))
-
+        self.addCleanup(
+            lambda: setattr(zope.security, 'canAccess', orig_canAccess))
 
         manager = managers.ViewletManagerBase(None, None, None)
-        with self.assertRaisesRegex(Unauthorized,
-                                    "You are not authorized to access the provider"):
-
+        with self.assertRaisesRegex(
+                Unauthorized,
+                "You are not authorized to access the provider"):
             manager['name']
+
 
 checker = renormalizing.RENormalizing([
     # Python 3 unicode removed the "u".
@@ -88,7 +92,7 @@ checker = renormalizing.RENormalizing([
      r"\1"),
     (re.compile('u(".*?")'),
      r"\1"),
-    ])
+])
 
 
 def doctestSetUp(test):
@@ -108,8 +112,10 @@ def doctestSetUp(test):
     from zope.contentprovider import tales
     metaconfigure.registerType('provider', tales.TALESProviderExpression)
 
+
 def doctestTearDown(test):
     cleanup.tearDown()
+
 
 class FakeModule(object):
     """A fake module."""
@@ -123,10 +129,12 @@ def directivesSetUp(test):
     test.globs['__name__'] = 'zope.viewlet.directives'
     sys.modules['zope.viewlet.directives'] = FakeModule(test.globs)
 
+
 def directivesTearDown(test):
     doctestTearDown(test)
     del sys.modules[test.globs['__name__']]
     test.globs.clear()
+
 
 def test_suite():
     flags = (doctest.NORMALIZE_WHITESPACE
@@ -152,6 +160,3 @@ def test_suite():
         ),
     ))
     return suite
-
-if __name__ == '__main__':
-    unittest.main(defaultTest='test_suite')
