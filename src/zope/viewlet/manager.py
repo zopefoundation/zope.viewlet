@@ -25,6 +25,7 @@ from zope.viewlet import interfaces
 from zope.location.interfaces import ILocation
 from zope.contentprovider.interfaces import BeforeUpdateEvent
 
+
 @zope.interface.implementer(interfaces.IViewletManager)
 class ViewletManagerBase(object):
     """The Viewlet Manager Base
@@ -123,17 +124,18 @@ class ViewletManagerBase(object):
         """
         Update the viewlet manager for rendering.
 
-        This method is part of the protocol of a content provider, called before
-        :meth:`render`. This implementation will use it to:
+        This method is part of the protocol of a content provider, called
+        before :meth:`render`. This implementation will use it to:
 
-        1. Find the total set of available viewlets by querying for viewlet adapters.
+        1. Find the total set of available viewlets by querying for viewlet
+           adapters.
         2. Filter the total set down to the active set by using :meth:`filter`.
         3. Sort the active set using :meth:`sort`.
-        4. Provide viewlets that implement :class:`~zope.location.interfaces.ILocation`
-           with a name.
+        4. Provide viewlets that implement
+           :class:`~zope.location.interfaces.ILocation` with a name.
         5. Set :attr:`viewlets` to the found set of active viewlets.
-        6. Fire :class:`.BeforeUpdateEvent` for each active viewlet before calling ``update()``
-           on it.
+        6. Fire :class:`.BeforeUpdateEvent` for each active viewlet before
+           calling ``update()`` on it.
 
         ..  seealso:: :class:`zope.contentprovider.interfaces.IContentProvider`
         """
@@ -188,7 +190,7 @@ def ViewletManager(name, interface, template=None, bases=()):
     :keyword tuple bases: The base classes to extend.
     """
 
-    attrDict = {'__name__' : name}
+    attrDict = {'__name__': name}
     if template is not None:
         attrDict['template'] = ViewPageTemplateFile(template)
 

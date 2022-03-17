@@ -26,6 +26,7 @@ from zope.viewlet import interfaces
 from zope.browserpage import simpleviewclass
 from zope.browserpage import ViewPageTemplateFile
 
+
 @zope.interface.implementer(interfaces.IViewlet)
 class ViewletBase(BrowserView):
     """Viewlet adapter class used in meta directive as a mixin class."""
@@ -85,8 +86,8 @@ def SimpleViewletClass(template, offering=None, bases=(), attributes=None,
     # Create the base class hierarchy
     bases += (simple, ViewletBase)
 
-    attrs = {'index' : ViewPageTemplateFile(template, offering),
-             '__name__' : name}
+    attrs = {'index': ViewPageTemplateFile(template, offering),
+             '__name__': name}
     if attributes:
         attrs.update(attributes)
 
@@ -156,8 +157,8 @@ def CSSViewlet(path, media="all", rel="stylesheet"):
                  (CSSResourceViewletBase, ViewletBase),
                  {'index': ViewPageTemplateFile(src),
                   '_path': path,
-                  '_media':media,
-                  '_rel':rel})
+                  '_media': media,
+                  '_rel': rel})
 
     return klass
 
@@ -191,7 +192,9 @@ class ResourceBundleViewletBase(object):
 
 def JavaScriptBundleViewlet(paths):
     """Create a viewlet that can simply insert javascript links."""
-    src = os.path.join(os.path.dirname(__file__), 'javascript_bundle_viewlet.pt')
+    src = os.path.join(
+        os.path.dirname(__file__),
+        'javascript_bundle_viewlet.pt')
 
     klass = type('JavaScriptBundleViewlet',
                  (ResourceBundleViewletBase, ViewletBase),
@@ -249,7 +252,8 @@ def CSSBundleViewlet(items):
     """
     Create a viewlet that can simply insert css links.
 
-    :param items: A sequence of dictionaries as described in `CSSResourceBundleViewletBase`.
+    :param items: A sequence of dictionaries as described in
+                  `CSSResourceBundleViewletBase`.
     """
     src = os.path.join(os.path.dirname(__file__), 'css_bundle_viewlet.pt')
 
