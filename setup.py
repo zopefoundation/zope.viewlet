@@ -34,7 +34,7 @@ TESTS_REQUIRE = [
 ]
 
 setup(name='zope.viewlet',
-      version='4.3.dev0',
+      version='4.3',
       author='Zope Foundation and Contributors',
       author_email='zope-dev@zope.org',
       description='Zope Viewlets',
