@@ -18,13 +18,14 @@ __docformat__ = 'restructuredtext'
 
 import os
 import sys
-import zope.interface
-from zope.traversing import api
-from zope.publisher.browser import BrowserView
-from zope.viewlet import interfaces
 
-from zope.browserpage import simpleviewclass
+import zope.interface
 from zope.browserpage import ViewPageTemplateFile
+from zope.browserpage import simpleviewclass
+from zope.publisher.browser import BrowserView
+from zope.traversing import api
+
+from zope.viewlet import interfaces
 
 
 @zope.interface.implementer(interfaces.IViewlet)

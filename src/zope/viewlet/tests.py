@@ -13,16 +13,17 @@
 ##############################################################################
 """Viewlet tests
 """
-import os
 import doctest
+import os
 import re
 import sys
 import unittest
 
 import zope.component
 from zope.component import eventtesting
+from zope.testing import cleanup
+from zope.testing import renormalizing
 from zope.traversing.testing import setUp as traversingSetUp
-from zope.testing import cleanup, renormalizing
 
 from zope.viewlet import manager as managers
 
@@ -60,8 +61,8 @@ class TestViewletManagerBase(unittest.TestCase):
                                 unittest.TestCase.assertRaisesRegexp)
 
     def test_unauthorized(self):
-        from zope.security.interfaces import Unauthorized
         import zope.security
+        from zope.security.interfaces import Unauthorized
 
         orig_query = zope.component.queryMultiAdapter
         orig_canAccess = zope.security.canAccess
