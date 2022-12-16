@@ -16,14 +16,14 @@
 __docformat__ = 'restructuredtext'
 
 import zope.component
+import zope.event
 import zope.interface
 import zope.security
-import zope.event
 from zope.browserpage import ViewPageTemplateFile
+from zope.contentprovider.interfaces import BeforeUpdateEvent
+from zope.location.interfaces import ILocation
 
 from zope.viewlet import interfaces
-from zope.location.interfaces import ILocation
-from zope.contentprovider.interfaces import BeforeUpdateEvent
 
 
 @zope.interface.implementer(interfaces.IViewletManager)

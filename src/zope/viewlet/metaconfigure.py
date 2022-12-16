@@ -15,15 +15,19 @@
 """
 import os
 
-from zope.security import checker
-from zope.configuration.exceptions import ConfigurationError
-from zope.interface import Interface, classImplements
-from zope.publisher.interfaces.browser import IDefaultBrowserLayer
-from zope.publisher.interfaces.browser import IBrowserPublisher
-from zope.publisher.interfaces.browser import IBrowserView
 from zope.component import zcml
 from zope.component.interface import provideInterface
-from zope.viewlet import viewlet, manager, interfaces
+from zope.configuration.exceptions import ConfigurationError
+from zope.interface import Interface
+from zope.interface import classImplements
+from zope.publisher.interfaces.browser import IBrowserPublisher
+from zope.publisher.interfaces.browser import IBrowserView
+from zope.publisher.interfaces.browser import IDefaultBrowserLayer
+from zope.security import checker
+
+from zope.viewlet import interfaces
+from zope.viewlet import manager
+from zope.viewlet import viewlet
 
 
 def viewletManagerDirective(

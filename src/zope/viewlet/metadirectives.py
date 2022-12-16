@@ -14,14 +14,18 @@
 """Viewlet metadirective
 """
 from zope.viewlet import interfaces
+
+
 __docformat__ = 'restructuredtext'
 
 import zope.configuration.fields
 import zope.schema
-from zope.publisher.interfaces import browser
-from zope.security.zcml import Permission
 from zope.i18nmessageid import MessageFactory
 from zope.interface import Interface
+from zope.publisher.interfaces import browser
+from zope.security.zcml import Permission
+
+
 _ = MessageFactory('zope')
 
 
