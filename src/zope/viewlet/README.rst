@@ -75,7 +75,7 @@ So initially nothing gets rendered:
 
   >>> leftColumn.update()
   >>> leftColumn.render()
-  u''
+  ''
 
 But now we register some :class:`viewlets
 <zope.viewlet.interfaces.IViewlet>` for the manager:
@@ -93,7 +93,7 @@ But now we register some :class:`viewlets
   ...         pass
   ...
   ...     def render(self):
-  ...         return u'<div class="box">It is sunny today!</div>'
+  ...         return '<div class="box">It is sunny today!</div>'
   ...
   ...     def __repr__(self):
   ...         return '<WeatherBox object at %x>' % id(self)
@@ -121,7 +121,7 @@ But now we register some :class:`viewlets
   ...         pass
   ...
   ...     def render(self):
-  ...         return u'<div class="box">Patriots (23) : Steelers (7)</div>'
+  ...         return '<div class="box">Patriots (23) : Steelers (7)</div>'
 
   >>> defineChecker(SportBox, viewletChecker)
 
@@ -188,7 +188,7 @@ If a viewlet provides :class:`zope.location.interfaces.ILocation` the
 the viewlet is registered.
 
   >>> [getattr(viewlet, '__name__', None) for viewlet in leftColumn.viewlets]
-  [u'sport', None]
+  ['sport', None]
 
 
 You can also lookup the viewlets directly for management purposes:
@@ -323,26 +323,26 @@ Let's create some viewlets:
   ...     weight = 1
   ...
   ...     def render(self):
-  ...         return u'<div>first</div>'
+  ...         return '<div>first</div>'
 
   >>> class SecondViewlet(viewlet.ViewletBase):
   ...
   ...     weight = 2
   ...
   ...     def render(self):
-  ...         return u'<div>second</div>'
+  ...         return '<div>second</div>'
 
   >>> class ThirdViewlet(viewlet.ViewletBase):
   ...
   ...     weight = 3
   ...
   ...     def render(self):
-  ...         return u'<div>third</div>'
+  ...         return '<div>third</div>'
 
   >>> class UnWeightedViewlet(viewlet.ViewletBase):
   ...
   ...     def render(self):
-  ...         return u'<div>unweighted</div>'
+  ...         return '<div>unweighted</div>'
 
   >>> defineChecker(FirstViewlet, viewletChecker)
   >>> defineChecker(SecondViewlet, viewletChecker)
@@ -431,7 +431,7 @@ weight and or no available attribute:
   ...     available = True
   ...
   ...     def render(self):
-  ...         return u'<div>available</div>'
+  ...         return '<div>available</div>'
 
   >>> class UnAvailableViewlet(viewlet.ViewletBase):
   ...
@@ -440,7 +440,7 @@ weight and or no available attribute:
   ...     available = False
   ...
   ...     def render(self):
-  ...         return u'<div>not available</div>'
+  ...         return '<div>not available</div>'
 
   >>> defineChecker(AvailableViewlet, viewletChecker)
   >>> defineChecker(UnAvailableViewlet, viewletChecker)

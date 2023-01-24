@@ -33,7 +33,7 @@ class ViewletBase(BrowserView):
     """Viewlet adapter class used in meta directive as a mixin class."""
 
     def __init__(self, context, request, view, manager):
-        super(ViewletBase, self).__init__(context, request)
+        super().__init__(context, request)
         self.__parent__ = view
         self.context = context
         self.request = request
@@ -76,7 +76,7 @@ class simple(simpleviewclass.simple):
 
 
 def SimpleViewletClass(template, offering=None, bases=(), attributes=None,
-                       name=u''):
+                       name=''):
     """A function that can be used to generate a viewlet from a set of
     information.
     """
@@ -98,7 +98,7 @@ def SimpleViewletClass(template, offering=None, bases=(), attributes=None,
     return class_
 
 
-class ResourceViewletBase(object):
+class ResourceViewletBase:
     """A simple viewlet for inserting references to resources.
 
     This is an abstract class that is expected to be used as a base only.
@@ -164,7 +164,7 @@ def CSSViewlet(path, media="all", rel="stylesheet"):
     return klass
 
 
-class ResourceBundleViewletBase(object):
+class ResourceBundleViewletBase:
     """A simple viewlet for inserting references to different resources.
 
     This is an abstract class that is expected to be used as a base only.
@@ -205,7 +205,7 @@ def JavaScriptBundleViewlet(paths):
     return klass
 
 
-class CSSResourceBundleViewletBase(object):
+class CSSResourceBundleViewletBase:
     """A simple viewlet for inserting css references to different resources.
 
     There is a sequence of dict used for the different resource
