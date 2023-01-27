@@ -55,13 +55,13 @@ class IContentProvider(Interface):
         required=True)
 
     for_ = zope.configuration.fields.GlobalObject(
-        title=u"The interface or class this view is for.",
+        title="The interface or class this view is for.",
         required=False
     )
 
     permission = Permission(
-        title=u"Permission",
-        description=u"The permission needed to use the view.",
+        title="Permission",
+        description="The permission needed to use the view.",
         required=True
     )
 
@@ -151,8 +151,8 @@ class IViewletDirective(ITemplatedContentProvider):
 
     manager = zope.configuration.fields.GlobalObject(
         title=_("view"),
-        description=u"The interface of the view this viewlet is for. "
-                    u"(default IBrowserView)",
+        description="The interface of the view this viewlet is for. "
+                    "(default IBrowserView)",
         required=False,
         default=interfaces.IViewletManager)
 

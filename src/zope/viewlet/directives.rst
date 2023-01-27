@@ -60,7 +60,7 @@ Now let's lookup the manager. This particular registration is pretty boring:
   True
   >>> manager.update()
   >>> manager.render()
-  u''
+  ''
 
 However, this registration is not very useful, since we did specify a specific
 viewlet manager interface, a specific content interface, specific view or
@@ -95,7 +95,7 @@ Now we can register register a manager providing this interface:
   True
   >>> manager.update()
   >>> manager.render()
-  u''
+  ''
 
 Next let's see what happens, if we specify a template for the viewlet manager:
 
@@ -224,9 +224,9 @@ If we look into the adapter registry, we will find the viewlet:
   ...     (content, request, view, manager), interfaces.IViewlet,
   ...     name='weather')
   >>> viewlet.render().strip()
-  u'<div>sunny</div>'
+  '<div>sunny</div>'
   >>> viewlet.extra_string_attributes
-  u'can be specified'
+  'can be specified'
 
 The manager now also gives us the output of the one and only viewlet:
 
@@ -260,7 +260,7 @@ Let's now ensure that we can also specify a viewlet class:
   ...     (content, request, view, manager), interfaces.IViewlet,
   ...     name='weather2')
   >>> viewlet().strip()
-  u'<div>sunny</div>'
+  '<div>sunny</div>'
 
 Okay, so the template-driven cases work. But just specifying a class should
 also work:
@@ -268,7 +268,7 @@ also work:
   >>> class Sport(object):
   ...     weight = 0
   ...     def __call__(self):
-  ...         return u'Red Sox vs. White Sox'
+  ...         return 'Red Sox vs. White Sox'
 
   >>> context = xmlconfig.string('''
   ... <configure xmlns="http://namespaces.zope.org/browser" i18n_domain="zope">
@@ -285,7 +285,7 @@ also work:
   >>> viewlet = zope.component.getMultiAdapter(
   ...     (content, request, view, manager), interfaces.IViewlet, name='sport')
   >>> viewlet()
-  u'Red Sox vs. White Sox'
+  'Red Sox vs. White Sox'
 
 It should also be possible to specify an alternative attribute of the class to
 be rendered upon calling the viewlet:
@@ -293,7 +293,7 @@ be rendered upon calling the viewlet:
   >>> class Stock(object):
   ...     weight = 0
   ...     def getStockTicker(self):
-  ...         return u'SRC $5.19'
+  ...         return 'SRC $5.19'
 
   >>> context = xmlconfig.string('''
   ... <configure xmlns="http://namespaces.zope.org/browser" i18n_domain="zope">
@@ -312,7 +312,7 @@ be rendered upon calling the viewlet:
   ...     (content, request, view, manager), interfaces.IViewlet,
   ...     name='stock')
   >>> viewlet.render()
-  u'SRC $5.19'
+  'SRC $5.19'
 
 If the class mentions that it implements any interfaces using the
 old-fashioned style, the resulting viewlet will
@@ -358,7 +358,7 @@ specification of any number of keyword arguments:
   ...     (content, request, view, manager), interfaces.IViewlet,
   ...     name='stock2')
   >>> viewlet.weight
-  u'8'
+  '8'
 
 
 Error Scenarios

@@ -27,7 +27,7 @@ from zope.viewlet import interfaces
 
 
 @zope.interface.implementer(interfaces.IViewletManager)
-class ViewletManagerBase(object):
+class ViewletManagerBase:
     """The Viewlet Manager Base
 
     A generic manager class which can be instantiated.
@@ -177,7 +177,7 @@ class ViewletManagerBase(object):
         # Now render the view
         if self.template:
             return self.template(viewlets=self.viewlets)
-        return u'\n'.join([viewlet.render() for viewlet in self.viewlets])
+        return '\n'.join([viewlet.render() for viewlet in self.viewlets])
 
 
 def ViewletManager(name, interface, template=None, bases=()):
@@ -234,7 +234,7 @@ class WeightOrderedViewletManager(ViewletManagerBase):
         """
         # do not render a manager template if no viewlets are avaiable
         if not self.viewlets:
-            return u''
+            return ''
         return ViewletManagerBase.render(self)
 
 

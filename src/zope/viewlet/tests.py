@@ -15,14 +15,12 @@
 """
 import doctest
 import os
-import re
 import sys
 import unittest
 
 import zope.component
 from zope.component import eventtesting
 from zope.testing import cleanup
-from zope.testing import renormalizing
 from zope.traversing.testing import setUp as traversingSetUp
 
 from zope.viewlet import manager as managers
@@ -32,7 +30,7 @@ class TestWeightOrderedViewletManager(unittest.TestCase):
 
     def test_render_no_viewlets(self):
         manager = managers.WeightOrderedViewletManager(None, None, None)
-        self.assertEqual(u'', manager.render())
+        self.assertEqual('', manager.render())
 
     def test_render_with_template(self):
         manager = managers.WeightOrderedViewletManager(None, None, None)
@@ -44,21 +42,16 @@ class TestWeightOrderedViewletManager(unittest.TestCase):
     def test_render_without_template(self):
         manager = managers.WeightOrderedViewletManager(None, None, None)
 
-        class Viewlet(object):
+        class Viewlet:
             def render(self):
-                return u"Hi"
+                return "Hi"
 
         manager.viewlets = [Viewlet(), Viewlet()]
 
-        self.assertEqual(u"Hi\nHi", manager.render())
+        self.assertEqual("Hi\nHi", manager.render())
 
 
 class TestViewletManagerBase(unittest.TestCase):
-
-    # Avoid DeprecationWarning for assertRaisesRegexp on Python 3 while
-    # coping with Python 2 not having the Regex spelling variant
-    assertRaisesRegex = getattr(unittest.TestCase, 'assertRaisesRegex',
-                                unittest.TestCase.assertRaisesRegexp)
 
     def test_unauthorized(self):
         import zope.security
@@ -87,15 +80,6 @@ class TestViewletManagerBase(unittest.TestCase):
             manager['name']
 
 
-checker = renormalizing.RENormalizing([
-    # Python 3 unicode removed the "u".
-    (re.compile("u('.*?')"),
-     r"\1"),
-    (re.compile('u(".*?")'),
-     r"\1"),
-])
-
-
 def doctestSetUp(test):
     cleanup.setUp()
     eventtesting.setUp()
@@ -118,7 +102,7 @@ def doctestTearDown(test):
     cleanup.tearDown()
 
 
-class FakeModule(object):
+class FakeModule:
     """A fake module."""
 
     def __init__(self, dict):
@@ -147,7 +131,7 @@ def test_suite():
         doctest.DocFileSuite(
             'README.rst',
             setUp=doctestSetUp, tearDown=doctestTearDown,
-            optionflags=flags, checker=checker,
+            optionflags=flags,
             globs={
                 '__file__': os.path.join(
                     os.path.dirname(__file__), 'README.rst')}
@@ -155,7 +139,7 @@ def test_suite():
         doctest.DocFileSuite(
             'directives.rst',
             setUp=directivesSetUp, tearDown=directivesTearDown,
-            optionflags=flags, checker=checker,
+            optionflags=flags,
             globs={'__file__': os.path.join(
                 os.path.dirname(__file__), 'directives.rst')}
         ),
